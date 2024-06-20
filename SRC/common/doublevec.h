@@ -32,6 +32,7 @@ public:
   DoubleVec() = default;
   DoubleVec(int size, double val=0) { data.setConstant(size, val); }
   DoubleVec(const DoubleVec&) = default;
+  DoubleVec(DoubleVec&&) = default;
   DoubleVec& operator=(const DoubleVec&) = default;
   ~DoubleVec() = default;
   

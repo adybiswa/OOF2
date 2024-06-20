@@ -713,12 +713,12 @@ std::vector<int> Element::localDoFmap() const {
 
 
 
-// Fill in a vector of the values of the Element's degrees of freedom,
-// in canonical order.  The list is assumed to already be the correct
-// size. 
+// Return a vector of the values of the Element's degrees of freedom,
+// in canonical order. 
 
-void Element::localDoFs(const FEMesh *mesh, DoubleVec &doflist) const
+DoubleVec Element::localDoFs(const FEMesh *mesh) const
 {
+  DoubleVec doflist(ndof(), 0.0);
   for(std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++) {
     Field &field = *Field::all()[fi];
     // loop over field components
@@ -738,6 +738,7 @@ void Element::localDoFs(const FEMesh *mesh, DoubleVec &doflist) const
 	}
     }
   }
+  return doflist;
 }
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

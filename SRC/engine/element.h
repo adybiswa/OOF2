@@ -121,7 +121,7 @@ public:
   void refreshMaterial(PyObject *skeltoncontext);
 
   int ndof() const;  std::vector<int> localDoFmap() const;
-  void localDoFs(const FEMesh*, DoubleVec&) const;
+  DoubleVec localDoFs(const FEMesh*) const;
 
   // Compute this element's contribution to the global stiffness
   // matrix at given time.  Redefined in InterfaceElement, to do each

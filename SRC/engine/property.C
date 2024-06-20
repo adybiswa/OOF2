@@ -327,8 +327,7 @@ void FluxProperty::static_flux_value(const FEMesh *mesh, const Element *element,
   recurse = true;
 
   // retrieve the local coefficients for the field(s) into localdofs.
-  DoubleVec localdofs( element->ndof(), 0.0 );
-  element->localDoFs( mesh, localdofs );
+  DoubleVec localdofs(element->localDoFs(mesh));
 
   // We want to increment the fluxVector in the passed-in fluxdata
   // object, but we can't use its kMatrix and offsetVector.  Those may
