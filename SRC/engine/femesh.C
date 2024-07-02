@@ -67,7 +67,6 @@ FEMesh::FEMesh(CMicrostructure * mc)
 FEMesh::~FEMesh() {
   for(std::vector<NodalEquation*>::size_type i=0; i<nodaleqn.size(); i++)
     delete nodaleqn[i];
-  
   for(std::vector<DegreeOfFreedom*>::size_type i=0; i<dof.size(); i++)
     delete dof[i];
   for(std::vector<FuncNode*>::size_type i=0; i<funcnode.size(); ++i)
@@ -78,6 +77,10 @@ FEMesh::~FEMesh() {
     delete element[i];
   for(std::vector<InterfaceElement*>::size_type i=0; i<edgement.size(); ++i)
     delete edgement[i];
+
+  // The data cache is cleared before the destructor is called, so we
+  // know that dofvalues doesn't currently point to an entry in the
+  // cache.
   delete dofvalues;
 
   // We do not own rwlock, so don't delete it.
@@ -100,7 +103,7 @@ FEMesh::~FEMesh() {
   globalFEMeshCountLock.acquire();
   --globalFEMeshCount;
   globalFEMeshCountLock.release();
-}
+} // FEMesh destructor
 
 long get_globalFEMeshCount() {
   return FEMesh::globalFEMeshCount;
@@ -514,7 +517,8 @@ Node *FEMesh::closestNode(const double x, const double y) {
 // get_dofvalues() and set_dofvalues() copy values to and from a
 // SubProblem's list of dofvalues.  They can't use DoFMap.extract()
 // and DoFMap.inject() because the data isn't stored in a vector on
-// the FEMesh side.
+// the FEMesh side (in parallel mode, which might be supported again
+// sometime).
 
 // Copy values from the mesh into the given vector x.
 
