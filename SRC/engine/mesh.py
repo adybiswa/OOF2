@@ -386,10 +386,13 @@ class Mesh(whoville.Who):
 #         self.cross_sections.destroy()
         self.periodicPointBoundaries = {}
         self.bdyconditions = {}
+        # The data cache must be cleared before the FEMesh is
+        # destroyed, so that FEMesh::dofvalues doesn't refer to the
+        # cache.
+        self.datacache.clear()
         self.getObject().destroy()
         # Remove from the enclosing WhoClass.  This nulls out parent's "._obj".
         meshes.remove(self.path())
-        self.datacache.clear()
 
     def lockAndDelete(self):
         self.reserve()
