@@ -664,15 +664,18 @@ meshmenu.addItem(OOFMenuItem(
         </para>"""
         ))
 
+# TODO: Store and retrieve time derivative fields?
+
 meshmenu.addItem(OOFMenuItem(
     'Initialize_Field',
     callback=ooflib.engine.IO.meshmenu.initField,
     params=[
-    whoville.WhoParameter('mesh', ooflib.engine.mesh.meshes,
-                          tip=parameter.emptyTipString),
-    meshparameters.FieldParameter('field', tip=parameter.emptyTipString,
-                                  outofplane=True),
-    fieldinit.FieldInitParameter('initializer', tip=parameter.emptyTipString)
+        whoville.WhoParameter(
+            'mesh', ooflib.engine.mesh.meshes, tip=parameter.emptyTipString),
+        meshparameters.FieldParameter(
+            'field', tip=parameter.emptyTipString, outofplane=True),
+        fieldinit.FieldInitParameter(
+            'initializer', tip=parameter.emptyTipString)
     ],
     help="Initialize a Field.",
     discussion="""<para>

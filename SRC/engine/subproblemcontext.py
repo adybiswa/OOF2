@@ -324,6 +324,24 @@ class SubProblemContext(whoville.Who):
         tfields = [t for t in tfields if self.is_defined_field(t)]
         return compound_fields + zfields + tfields
 
+    def all_timederivative_fields(self):
+        for fld in self.all_compound_fields():
+            tdf = fld.time_derivative()
+            tof = fld.out_of_plane_time_derivative()
+            if self.getObject().is_defined_field(tdf):
+                yield tdf
+            if self.getObject().is_defined_field(tof):
+                yield tof
+
+    def all_outofplane_fields(self):
+        for fld in self.all_compound_fields():
+            oop = fld.out_of_plane()
+            tof = fld.out_of_plane_time_derivative()
+            if self.getObject().is_defined_field(oop):
+                yield oop
+            if self.getObject().is_defined_field(tof):
+                yield tof
+
     def all_active_fields(self):
         return [f for f in self.all_fields() if self.is_active_field(f)]
 
@@ -345,6 +363,17 @@ class SubProblemContext(whoville.Who):
     def is_active_field(self, fld):
         csub = self.getObject()
         return fld.is_defined(csub) and fld.is_active(csub)
+    def is_first_order_field(self, fld):
+        # Does the first time derivative of the given field appear in
+        # the subproblem's active equations?
+        self.solver_precompute()
+        if self.is_active_field(fld):
+            for material in self.getObject().getMaterials():
+                if material.is_first_order_field(self.getObject(), fld,
+                                                 self.all_equations()):
+                    return True
+        return False
+        
     def is_second_order_field(self, fld):
         # Does the second time derivative of the given field appear in
         # the subproblem's active equations?
@@ -371,29 +400,44 @@ class SubProblemContext(whoville.Who):
         # fields.  Others need them just for fields whose second
         # derivatives appear in the equations.
 
-        # Time derivatives are required for all fields if they're
-        # required for any.
-
         # Called by OOF.Subproblem.Set_Solver,
         # OOF.Subproblem.Schedule_Solution, and
         # SubProblemContext.changed().
         newfields = set()
+
         if (self.solveFlag and self.solver_mode and
             self.time_stepper.derivOrder() > 0):
-            tdrequired = self.time_stepper.require_timederiv_field()
-            if tdrequired:
-                fields = self.all_compound_fields()
-            else:
-                fields = self.second_order_fields()
-            for fld in fields:
+
+            # Define the time derivative field for all fields, even
+            # those that don't use it explicitly when solving.  They
+            # might need it to compute outputs, or to evaluate a
+            # field-rate dependent Property.
+            for fld in self.all_compound_fields():
                 td = fld.time_derivative()
                 if self.getObject().define_field(td):
                     newfields.add(td)
                 oop = fld.out_of_plane()
-                if self.is_defined_field(oop): # and tdrequired:
+                if self.is_defined_field(oop):
                     td = fld.out_of_plane_time_derivative()
                     if self.getObject().define_field(td):
                         newfields.add(td)
+            
+            ## This version defines only the time derivative fields that
+            ## are necessitated by the solvers.
+            # tdrequired = self.time_stepper.require_timederiv_field()
+            # if tdrequired:
+            #     fields = self.all_compound_fields()
+            # else:
+            #     fields = self.second_order_fields()
+            # for fld in fields:
+            #     td = fld.time_derivative()
+            #     if self.getObject().define_field(td):
+            #         newfields.add(td)
+            #     oop = fld.out_of_plane()
+            #     if self.is_defined_field(oop):
+            #         td = fld.out_of_plane_time_derivative()
+            #         if self.getObject().define_field(td):
+            #             newfields.add(td)
         return newfields
 
     def solver_precompute(self, solving=False):
@@ -607,7 +651,7 @@ class SubProblemContext(whoville.Who):
                 # However, it's never needed on the first call to
                 # make_linear_system, so that's ok.
                 subproblem.set_mesh_dofs(vals, time)
-
+        
         ## TODO OPT: Be more sophisticated here. Instead of
         ## recomputing everything, only recompute the matrices and
         ## vectors that may have changed.
@@ -678,7 +722,6 @@ class SubProblemContext(whoville.Who):
         if newLinSys:
             linsys = self.getObject().new_linear_system(time)
             linsys.computed = timestamp.TimeStamp()
-
         if newTime:
             linsys.set_time(time)
 
@@ -744,7 +787,6 @@ class SubProblemContext(whoville.Who):
 
             self.newMatrixCount += 1
         # utils.memusage("End if rebuildMatricies %s" %datetime.datetime.now())
-
         if bcsReset or rebuildMatrices or newFieldValues:
             # utils.memusage("Begin Build submatrix maps %s" %datetime.datetime.now())
             linsys.build_submatrix_maps()
@@ -763,7 +805,6 @@ class SubProblemContext(whoville.Who):
             # utils.memusage("Begin set Dirichlet Derivatives %s" %datetime.datetime.now())
             femesh.setDirichletDerivatives(subpobj, linsys, time)
         # utils.memusage("End if bcsReset or rebuildMatricies or newFieldValues %s" %datetime.datetime.now())
-
 
         if bcsReset:
             # Compute the part of the rhs due to fixed fields or fixed
@@ -793,7 +834,6 @@ class SubProblemContext(whoville.Who):
         #         dumpfile = "dump"
         #     linsys.dumpAll(dumpfile, time, "")
         #     sys.exit()
-        
         return linsys
 
     #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
@@ -936,6 +976,34 @@ class SubProblemContext(whoville.Who):
             C12.axpy(-1.0, u2dot, rhs)
             self.matrix_method(self.asymmetricC).solve(C11, rhs, u1dot)
             self.time_stepper.set_derivs_part('C', linsys, u1dot, unknowns)
+
+    def computeFirstDerivs(self, linsys, unknowns):
+        # Assuming that the independent fields have been solved for,
+        # compute the dependent first derivative fields.  See
+        # computeStaticFieldsL for some relevant comments.
+
+        # These independent dofs have been found by the solver:
+        u1 = self.time_stepper.get_unknowns_part('C', linsys, unknowns)
+        u0 = self.time_stepper.get_unknowns_part('K', linsys, unknowns)
+        u2 = self.time_stepper.get_unknowns_part('M', linsys, unknowns)
+        u2dot = self.time_stepper.get_derivs_part('M', linsys, unknowns)
+
+        u1dot = doublevec.DoubleVec(len(u1), 0.0)
+
+        if len(u1) > 0:
+            # Find u1dot by solving C12*u2dot + C11*u1dot + K*u = rhs
+            #                 where K*u = K_12*u2 + K_11*u1 + K_10*u0
+            C12 = linsys.C_submatrix('C', 'M')
+            C11 = linsys.C_submatrix('C', 'C')
+            K12 = linsys.K_submatrix('C', 'M')
+            K11 = linsys.K_submatrix('C', 'C')
+            K10 = linsys.K_submatrix('C', 'K')
+            rhs = self.time_stepper.rhs_ind_part('C', linsys)
+            # TODO: is there a simpler way of computing K*u?
+            rhs -= (C12*u2dot + K12*u2 + K11*u1 + K10*u0)
+            self.matrix_method(self.asymmetricC).solve(C11, rhs, u1dot)
+            # Now what?
+        return u1dot
 
     ## Time stepping utilities
 

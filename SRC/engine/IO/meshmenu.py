@@ -866,6 +866,7 @@ meshmenu.addItem(oofmenu.OOFMenuItem(
                                   tip=parameter.emptyTipString),
             meshparameters.FieldParameter('field',
                                           tip=parameter.emptyTipString,
+                                          timederivative=True,
                                           outofplane=True),
             fieldinit.FieldInitParameter('initializer',
                                          tip=parameter.emptyTipString)
@@ -969,6 +970,7 @@ meshmenu.addItem(oofmenu.OOFMenuItem(
     params=[whoville.WhoParameter('mesh', ooflib.engine.mesh.meshes,
                                   tip=parameter.emptyTipString),
             meshparameters.FieldParameter('field',
+                                          timederivative=True,
                                           outofplane=True,
                                           tip=parameter.emptyTipString)],
     help="Remove the initializer for the given Field.",

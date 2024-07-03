@@ -115,8 +115,10 @@ FieldOutput = output.Output(
     srepr=lambda x: x.resolveAlias('field').value.name(),
     instancefn = _field_instancefn,
     column_names = _field_column_names,
-    params = [meshparameters.FieldParameter("field", outofplane=1,
-                                               tip=parameter.emptyTipString)],
+    params = [meshparameters.FieldParameter(
+        "field",
+        timederivative=True, outofplane=True,
+        tip=parameter.emptyTipString)],
     tip="Compute Field values.",
     discussion='<para>Compute the value of the given &field; on a &mesh;.</para>'
     )
@@ -157,8 +159,10 @@ FieldDerivOutput = output.Output(
     callback = _fieldderiv,
     otype = outputval.OutputVal,
     instancefn = _field_instancefn,
-    params = [meshparameters.FieldParameter("field", outofplane=1,
-                                                tip=parameter.emptyTipString),
+    params = [meshparameters.FieldParameter("field",
+                                            outofplane=True,
+                                            timederivative=True,
+                                            tip=parameter.emptyTipString),
                   enum.EnumParameter("derivative", InPlaneSpaceComponent,
                                      tip='Which derivative to take.')],
     srepr=_fieldderiv_shortrepr,

@@ -22,12 +22,18 @@ from ooflib.common.IO import parameter
 from ooflib.common.IO import placeholder
 
 class FieldParameterBase(parameter.ObjParameter, parameter.Parameter):
-    def __init__(self, name, value=None, default=None, tip=None, outofplane=0):
+    def __init__(self, name, value=None, default=None, tip=None,
+                 compound=True,
+                 outofplane=False,
+                 timederivative=False):
+        self.compound = compound # allow compound fields as values?
         self.outofplane = outofplane    # allow out-of-plane fields as values?
+        self.timederivative = timederivative # allow time derivative fields?
         parameter.Parameter.__init__(self, name, value, default, tip)
     def clone(self):
         return self.__class__(self.name, self.value, self.default, self.tip,
-                              self.outofplane)
+                              self.compound, self.outofplane,
+                              self.timederivative)
     
     def checker(self, x):
         if not isinstance(x, field.Field):

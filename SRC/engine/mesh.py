@@ -461,6 +461,9 @@ class Mesh(whoville.Who):
     # available equations.
 
     # "all_subproblem" prefix means they're for all subproblems.
+    ## TODO: change the names.  Use MeshContext.all_fields instead of
+    ## Mesh,all_subproblem_fields.  It won't be confused with
+    ## SubproblemContext.all_fields.
     
     def all_subproblem_equations(self):
         eqns = utils.OrderedSet()
@@ -483,11 +486,25 @@ class Mesh(whoville.Who):
                 flds.add(f)
         return flds
 
-    # Really all fields, including out-of-plane parts.
+    # Really all fields, including out-of-plane parts and time derivatives
     def all_subproblem_fields(self):
         fields = utils.OrderedSet()
         for s in self.subproblems():
             for f in s.all_fields():
+                fields.add(f)
+        return fields
+
+    def all_timederivative_subproblem_fields(self):
+        fields = utils.OrderedSet()
+        for s in self.subproblems():
+            for f in s.all_timederivative_fields():
+                fields.add(f)
+        return fields
+
+    def all_outofplane_subproblem_fields(self):
+        fields = utils.OrderedSet()
+        for s in self.subproblems():
+            for f in s.all_outofplane_fields():
                 fields.add(f)
         return fields
 
