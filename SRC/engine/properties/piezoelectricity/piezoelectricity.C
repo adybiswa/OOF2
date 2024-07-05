@@ -133,6 +133,21 @@ void PiezoElectricity::output(FEMesh *mesh,
     delete stype;
   }
 
+  if(outputname == "StrainRate") {
+    const std::string *stype = output->getRegisteredParamName("type");
+    if(*stype == "Piezoelectric" || *stype == "Elastic") {
+      SymmMatrix3 *sdata = dynamic_cast<SymmMatrix3*>(data);
+      DoubleVec E_field(3,0);
+      findElectricFieldRate(mesh, element, pos, E_field);
+      if(*stype == "Piezoelectric")
+	// Piezoelectric strain is d*E = -d*(grad V)
+	*sdata += dijk(mesh, element, pos)*E_field;
+      else			// stype == "Elastic"
+	*sdata -= dijk(mesh, element, pos)*E_field;
+    }
+    delete stype;
+  }
+
   if(outputname == "Energy") {
     const std::string *etype = output->getEnumParam("etype");
     //Energies

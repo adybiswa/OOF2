@@ -29,6 +29,11 @@ public:
   POInitGeometricStrain();
 };
 
+class POInitGeometricStrainRate : public PropertyOutputValInit {
+public:
+  POInitGeometricStrainRate();
+};
+
 %newobject getGeometricStrain;
 
 %inline %{

@@ -85,6 +85,8 @@ void PlaneStrain::output(FEMesh *mesh,
        (*sdata)(2,2) += ezz_;
      delete stype;
   }
+  // There's no contribution to StrainRate because ezz is constant.
+  
 //   if(outputname == "Energy") {
 //     // Energy looks strange, because we're doing two of the three
 //     // terms in a product of differences.  The full answer is

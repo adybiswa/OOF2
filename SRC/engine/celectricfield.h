@@ -26,6 +26,8 @@ class MasterPosition;
 void findElectricField(const FEMesh*, const Element*,
 		       const MasterPosition &, DoubleVec &);
 
+void findElectricFieldRate(const FEMesh*, const Element*,
+			   const MasterPosition &, DoubleVec &);
 
 
 #endif // CELECTRICFIELD_H

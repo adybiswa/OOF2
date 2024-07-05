@@ -45,5 +45,10 @@ public:
 				const Element*, const MasterCoord&) const;
 };
 
+class POInitGeometricStrainRate : public PropertyOutputValInit {
+public:
+  virtual OutputVal *operator()(const PropertyOutput*, const FEMesh*,
+				const Element*, const MasterCoord&) const;
+};
 
 #endif // CSTRAIN_H

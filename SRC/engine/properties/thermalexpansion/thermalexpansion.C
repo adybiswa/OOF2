@@ -150,6 +150,20 @@ void ThermalExpansion::output(FEMesh *mesh,
     delete stype;
   } // strain output ends here
 
+  if(outputname == "StrainRate") {
+    static ScalarField *Tdot =
+      dynamic_cast<ScalarField*>(temperature->time_derivative());
+    const std::string *stype = output->getRegisteredParamName("type");
+    SymmMatrix3 *sdata = dynamic_cast<SymmMatrix3*>(data);
+    // Compute alpha*Tdot with Tdot interpolated to position pos
+    double trate = Tdot->value(mesh, element, pos);
+    if(*stype == "Thermal")
+      *sdata += expansiontensor(mesh, element, pos)*trate;
+    else if(*stype == "Elastic")
+      *sdata -= expansiontensor(mesh, element, pos)*trate;
+    delete stype;
+  }
+
   if(outputname == "Energy") {
     // See comment in StressFreeStrain::output.
     const std::string *etype = output->getEnumParam("etype");

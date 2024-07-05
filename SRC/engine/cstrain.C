@@ -172,3 +172,24 @@ OutputVal *POInitGeometricStrain::operator()(
   delete straintype;
   return strain;
 };
+
+// Initialize a PropertyOutput with the geometric strain rate.
+
+OutputVal *POInitGeometricStrainRate::operator()(
+		       const PropertyOutput *po, const FEMesh *mesh,
+		       const Element *element, const MasterCoord &pos)
+  const
+{
+  SymmMatrix3 *strain = new SymmMatrix3();
+  // Get the Python parameter that tells which Strain is being
+  // computed. It's a RegisteredParameter.
+  const std::string *straintype = po->getRegisteredParamName("type");
+  if(*straintype == "Geometric" || *straintype == "Elastic") {
+    findGeometricStrainRate(mesh, element, pos, strain, false);
+  }
+  else if(*straintype == "Nonlinear Geometric") {
+    findGeometricStrainRate(mesh, element, pos, strain, true);
+  }
+  delete straintype;
+  return strain;
+};

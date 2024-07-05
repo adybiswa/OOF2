@@ -158,3 +158,19 @@ propertyoutputreg.SymmMatrix3PropertyOutputRegistration(
     computed.</para>
     
     """)
+
+propertyoutputreg.SymmMatrix3PropertyOutputRegistration(
+    "StrainRate",
+    initializer=POInitGeometricStrainRate(),
+    parameters=[StrainTypeParameter("type", default=GeometricStrain(),
+                                   tip='The type of strain to compute')],
+    ordering=4,
+    tip='Compute a strain rate',
+    srepr=lambda s: s.resolveAlias("type").value.name() + " Strain",
+    discussion="""
+
+    <para>Compute some variety of strain rate on the &mesh;.  The
+    parameter <varname>type</varname> determines exactly which strain
+    is computed.</para>
+    
+    """)
