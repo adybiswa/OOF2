@@ -25,6 +25,7 @@
 %}
 
 %nodefaultctor DegreeOfFreedom;
+%nodefaultdtor DegreeOfFreedom;
 
 class DegreeOfFreedom {
 public:

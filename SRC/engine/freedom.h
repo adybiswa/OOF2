@@ -22,7 +22,6 @@ class FEMesh;
 class DegreeOfFreedom {
 private:
   DegreeOfFreedom(const DegreeOfFreedom&);
-public:				// should be private, but swig complains
   DegreeOfFreedom(int);
   ~DegreeOfFreedom() {}
   friend class FEMesh;		// only a FEMesh can create or destroy a DoF
