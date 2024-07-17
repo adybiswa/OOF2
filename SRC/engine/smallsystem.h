@@ -46,7 +46,7 @@ public:
   SmallSparseMatrix(int, int);
 
   virtual double &operator()(int row, int col);
-  virtual const double operator()(int row, int col) const;
+  virtual double operator()(int row, int col) const;
   void operator+=(const SmallSparseMatrix&);
 
   bool nonzero(int, int) const;

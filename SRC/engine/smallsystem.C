@@ -355,7 +355,7 @@ double &SmallSparseMatrix::operator()(int row, int col) {
   return SmallMatrix::operator()(row, col);
 }
 
-const double SmallSparseMatrix::operator()(int row, int col) const {
+double SmallSparseMatrix::operator()(int row, int col) const {
   return SmallMatrix::operator()(row, col);
 }
 
