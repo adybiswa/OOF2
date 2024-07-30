@@ -235,6 +235,7 @@ class NodeMode(MeshInfoMode):
             fld = field.getField(fieldname)
             zfld = fld.out_of_plane()
             tfld = fld.time_derivative()
+            tzfld = fld.out_of_plane_time_derivative()
             nfieldrows += fld.ndof()
             listedfields.append(fld)
             if node.hasField(zfld):
@@ -243,6 +244,9 @@ class NodeMode(MeshInfoMode):
             if node.hasField(tfld):
                 listedfields.append(tfld)
                 nfieldrows += tfld.ndof()
+            if node.hasField(tzfld):
+                listedfields.append(tzfld)
+                nfieldrows += tzfld.ndof()
         # Rebuild the table of field values, but only if the fields
         # have changed.
         if self.fieldslisted != listedfields:
