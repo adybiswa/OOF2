@@ -110,7 +110,7 @@ class SkeletonDisplayMethod(display.DisplayMethod):
 # iteration max.  This is expected to indicate failure due to range
 # problems.  Caught and handled in the undisplaced_from_displaced
 # function, which is the raising function's only caller.
-class IterationMaxExceeded:
+class IterationMaxExceeded(Exception):
     pass
     
 class MeshDisplayMethod(display.AnimationLayer, display.DisplayMethod):

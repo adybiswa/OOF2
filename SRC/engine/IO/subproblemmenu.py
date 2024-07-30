@@ -911,7 +911,7 @@ def _copySolver(menuitem, source, target):
         solver = sourceCtxt.solver_mode.clone()
     finally:
         sourceCtxt.end_reading()
-    _setSolver(menuitem, target, solver)
+    setSolver(menuitem, target, solver)
 
 subproblemMenu.addItem(oofmenu.OOFMenuItem(
     'Copy_Solver',
