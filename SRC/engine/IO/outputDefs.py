@@ -445,3 +445,22 @@ propertyoutputreg.OrientationPropertyOutputRegistration(
     ordering=1000,
 )
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Time output.  This is intended to generate a "time" column when
+# concatenating Outputs.
+
+def _timeOutput(mesh, elements, coords):
+    return [outputval.ScalarOutputVal(mesh.getCurrentTime())]
+
+TimeOutput = output.Output(
+    name = "time",
+    otype = outputval.ScalarOutputVal,
+    callback = _timeOutput,
+    srepr = lambda s: "Time",
+    instancefn = outputClones.scalar_instancefn,
+    column_names = lambda s: ["Time"]
+    )
+
+output.defineAggregateOutput('Time', TimeOutput, ordering=10000)
+output.defineScalarOutput('Time', TimeOutput, ordering=10000)
