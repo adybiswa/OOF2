@@ -120,7 +120,9 @@ public:
   // Tell the Element that the Material may have changed.
   void refreshMaterial(PyObject *skeltoncontext);
 
-  int ndof() const;  std::vector<int> localDoFmap() const;
+  int ndof() const;
+  std::vector<int> localDoFmap() const;
+  std::vector<int> localDoFmap_noDerivs() const;
   DoubleVec localDoFs(const FEMesh*) const;
 
   // Compute this element's contribution to the global stiffness
@@ -245,6 +247,15 @@ public:
   ArithmeticOutputValue outputFieldDeriv(const FEMesh*, const Field &,
 					 SpaceIndex *,
 					 const MasterPosition &) const;
+
+  // ArithmeticOutputValue outputFieldTimeDeriv(const FEMesh*, const Field&,
+  // 					     const MasterPosition&) const;
+
+  // std::vector<ArithmeticOutputValue> *outputFieldTimeDerivs(
+  // 					    const FEMesh*,
+  // 					    const Field&,
+  // 					    const std::vector<MasterCoord*>*)
+  //   const;
 
   // ArithmeticOutputValue outputFlux(const FEMesh*, const Flux&, const MasterPosition&)
   //   const;

@@ -119,8 +119,8 @@ void DoFMap::extract(const DoubleVec &source, DoubleVec &dest,
     int j = map_[i];
     if(j != -1) {
       assert(j >= 0 && (unsigned int) j < range());
-      assert( j+oset < dest.size() );
-      assert( i < source.size() );
+      assert(j+oset < dest.size());
+      assert(i < source.size());
       dest[j+oset] += source[i];
     }
   }
@@ -154,8 +154,8 @@ void DoFMap::inject(const DoubleVec &source, unsigned int oset,
   for(unsigned int i=0; i<map_.size(); ++i) {
     int j = map_[i];
     if (j != -1) {
-      assert( i < dest.size());
-      assert( j+oset < source.size());
+      assert(i < dest.size());
+      assert(j+oset < source.size());
       dest[i] = source[j+oset];
     }
   }
@@ -332,4 +332,19 @@ double DoFMap::maphash() const {
     }
   }
   return sum;
+}
+
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+std::ostream &operator<<(std::ostream &os, const DoFMap::TranslationMap &tmap) {
+  os << "{";
+  bool first = true;
+  for(auto item : tmap) {
+    if(!first)
+      os << ", ";
+    first = false;
+    os << "[" << item.first << "," << item.second << "]";
+  }
+  os << "}";
+  return os;
 }

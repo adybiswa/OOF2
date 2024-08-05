@@ -22,6 +22,13 @@ OOF2 2.3.4
   which will increase memory requirements and data file sizes in same
   cases.
 
+* Added a "Time" output, which when concatenated with other outputs
+  adds a time column to data files.  Previously the time appeared only
+  as a comment.
+
+* The time derivatives of fields can now be plotted and used in other
+  outputs.
+
 OOF2 2.3.3
 
 * Disabled selection of interface segments since interface properties

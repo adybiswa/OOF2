@@ -30,9 +30,7 @@ class NonlinearSolverBase(registeredclass.RegisteredClass):
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# NoNonlinearSolver is actually a linear solver.  The order of the
-# base classes is important to prevent swig 1.1 from complaining
-# about the type of the "self" arg to CNonlinearSolver::nonlinear.
+# NoNonlinearSolver is actually a linear solver. 
 
 class NoNonlinearSolver(nonlinearsolvercore.NoNLSolver, NonlinearSolverBase):
     def step(self, subproblem, *args, **kwargs):

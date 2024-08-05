@@ -337,15 +337,14 @@ def evolve_to(meshctxt, subprobctxts, time, endtime, delta, prog,
 
                         # Take a timestep.  The return value is a
                         # timestepper.StepResult object.
-                        # debug.fmsg("taking step from %g to %g (%g)" %
-                        #            (time, targettime, targettime-time))
+                        # debug.fmsg(f"taking step from {time} to"
+                        #            f" {targettime} ({targettime-time})")
                         stepResult = subproblem.nonlinear_solver.step(
                             subproblem,
                             linsys=lsClone,
                             time=time,
                             unknowns=subproblem.get_unknowns(lsClone),
                             endtime=targettime)
-
                         ## debug.fmsg("time=", targettime)
                         # debug.fmsg("endValues=", stepResult.endValues)
                         if stepResult.ok:
@@ -439,7 +438,7 @@ def evolve_to(meshctxt, subprobctxts, time, endtime, delta, prog,
         raise
     except Exception as exc:
         debug.fmsg("Caught an Exception")
-        meshctxt.setStatus(meshstatus.Failed(exc.message))
+        meshctxt.setStatus(meshstatus.Failed(exc))
         raise
 
     if truncated_step:

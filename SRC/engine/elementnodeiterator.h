@@ -174,6 +174,9 @@ protected:
   // many pointer dereference operations which causes high cache
   // misses rate. As a result, each time when funcnode() is called, we
   // cache the result for reuse.
+  //* TODO: Is this still true? Element::ndof() doesn't call
+  //* funcnode() more than once for each node.  See if removing the
+  //* cache affects the run time.
   // Cache format: index and pointer pair of a function node 
   mutable std::pair<int, FuncNode*> fncache;
 public:

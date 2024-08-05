@@ -25,6 +25,8 @@ class DoubleVec;
 
 class DoFMap {
 private:
+  // TODO OPT MAYBE: Use a std::map instead of a std::vector for large
+  // sparse DoFMaps?
   std::vector<int> map_;
   int range_;
 public:
@@ -65,6 +67,7 @@ public:
   DoubleVec *extract(const DoubleVec&) const;
   void inject(const DoubleVec &src, DoubleVec &dest) const;
   void inject(const DoubleVec &src, unsigned int oset, DoubleVec &dest) const;
+  // extract into the given vector, with the given offset
   void extract(const DoubleVec&, DoubleVec&, unsigned int) const;
 
   typedef std::map<unsigned int, unsigned int> TranslationMap;
@@ -76,6 +79,8 @@ public:
   friend DoFMap compose(const DoFMap&, const DoFMap&);
   friend DoFMap concat(const DoFMap&, const DoFMap&);
 };
+
+std::ostream &operator<<(std::ostream&, const DoFMap::TranslationMap&);
 
 DoFMap compose(const DoFMap&, const DoFMap&);
 DoFMap concat(const DoFMap&, const DoFMap&);

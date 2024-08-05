@@ -139,7 +139,7 @@ void Element::make_linear_system(const CSubProblem *const subproblem,
 				 const CNonlinearSolver *nlsolver,
 				 LinearizedSystem &system) const
 {
-  std::vector<int> dofmap = localDoFmap();
+  std::vector<int> dofmap = localDoFmap_noDerivs();
 
   const Material *mat = material();
   if(mat) {
@@ -171,7 +171,7 @@ void InterfaceElement::make_linear_system(const CSubProblem *const subproblem,
 					  const CNonlinearSolver *nlsolver,
 					  LinearizedSystem &system) const
 {
-  std::vector<int> dofmap = localDoFmap();
+  std::vector<int> dofmap = localDoFmap_noDerivs();
   const Material *mat = material();
   
   if(mat) {
@@ -567,7 +567,7 @@ Element::outputFields(const FEMesh *mesh, const Field &field,
   results->reserve(coords->size());
   for(std::vector<MasterCoord*>::size_type i=0; i<coords->size(); i++) {
     ArithmeticOutputValue val = field.newOutputValue();
-    for(CleverPtr<ElementFuncNodeIterator>node(funcnode_iterator()); 
+    for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator()); 
 	!node->end(); ++*node) {
       double sfvalue = node->shapefunction(*(*coords)[i]);
       // Field::output returns an appropriate type of 0 if the Field
@@ -660,12 +660,53 @@ ArithmeticOutputValue Element::outputFieldDeriv(
 {
   ArithmeticOutputValue val = field.newOutputValue();
   for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
-      !node->end(); ++*node) {
-    double dsfvalue = node->dshapefunction(*deriv_component, pos);
-    val += dsfvalue*field.output(mesh, *node);
+      !node->end(); ++*node)
+    {
+      double dsfvalue = node->dshapefunction(*deriv_component, pos);
+      val += dsfvalue*field.output(mesh, *node);
     }
   return val;
 }
+
+// ArithmeticOutputValue Element::outputFieldTimeDeriv(
+// 				    const FEMesh *mesh,
+// 				    const Field &field,
+// 				    const MasterPosition &pos)
+//   const
+// {
+//   ArithmeticOutputValue val = field.newOutputValue();
+//   Field *tdfield = field.time_derivative();
+//   for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
+//       !node->end(); ++*node)
+//     {
+//       double sfvalue = node->shapefunction(pos);
+//       val += sfvalue*field.output(mesh, *node);
+//     }
+//   return val;
+// }
+
+// std::vector<ArithmeticOutputValue> *Element::outputFieldTimeDerivs(
+// 				   const FEMesh  *mesh,
+// 				   const Field &field,
+// 				   const std::vector<MasterCoord*> *coords)
+//   const
+// {
+//   std::vector<ArithmeticOutputValue> *results =
+//     new std::vector<ArithmeticOutputValue>;
+//   results->reserve(coords->size());
+//   for(MasterCoord *coord : coords) {
+//     ArithmeticOutputValue val = field.newOutputValue();
+//     for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
+// 	!node.end(); ++*node)
+//       {
+// 	double sfvalue = node->shapefunction(*coord);
+// 	val += sfvalue*
+//       }
+//   }
+// }
+
+   
+  
 
 // OutputValue Element::outputFlux(const FEMesh *mesh, const Flux &flux,
 // 				const MasterPosition &pos) const
@@ -685,54 +726,89 @@ Element::outputFluxes(const FEMesh *mesh, const Flux &flux,
   return results;
 }
 
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
+// Utility function used by Element::localDoFmap() and friends.  It
+// creates the part of a dofmap for a given source field.  The map
+// points to the degree of freedom corresponding to the same component
+// of the target field at the same node.
+
+static void makeDoFmap_(const Element *element,
+			const Field &sourceField, const Field &targetField,
+			std::vector<int> &dofmap)
+{
+  for(CleverPtr<ElementFuncNodeIterator> node(element->funcnode_iterator());
+      !node->end(); ++*node)
+    {
+      if(node->hasField(sourceField) && node->hasField(targetField)) {
+	for(IndexP fcomp : *sourceField.components(ALL_INDICES)) {
+	  DegreeOfFreedom *targetdof = targetField(*node, fcomp.integer());
+	  dofmap[node->localindex(sourceField, fcomp)] =
+	    targetdof->dofindex();
+	}
+      }
+    }
+}
 
 // Create a vector mapping the canonical order of the Element's
-// degrees of freedom to the DOF's actual indices.  Almost identical
-// code to the routine below.
+// degrees of freedom to the DoF's actual indices in the global list
+// of DoFs.  The canonical order is determined by
+// ElementFuncNodeIterator::localindex().  This is not actually used,
+// but might be someday.
+
 std::vector<int> Element::localDoFmap() const {
   std::vector<int> dofmap(ndof(),-1);
-  for(std::vector<Field*>::size_type fi=0; fi< Field::all().size(); fi++) {
-    Field &field = *Field::all()[fi];
-    // Field components.
-    for(IndexP fcomp : *field.components(ALL_INDICES)) {
-      // Nodes
-      for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
-	  !node->end(); ++*node)
-	{
-	  if(node->hasField(field)) {
-	    DegreeOfFreedom *dof = field(*node, fcomp.integer());
-	    dofmap[node->localindex(field, fcomp)] = dof->dofindex();
-	  }
-	}
-    }
+  for(CompoundField *field : CompoundField::allcompoundfields()) {
+    makeDoFmap_(this, *field, *field, dofmap);
+    makeDoFmap_(this, *field->out_of_plane(), *field->out_of_plane(), dofmap);
+    makeDoFmap_(this, *field->time_derivative(), *field->time_derivative(),
+		dofmap);
+    makeDoFmap_(this, *field->out_of_plane_time_derivative(),
+		*field->out_of_plane_time_derivative(), dofmap);
   }
   return dofmap;
 }
 
+// The same as localDoFmap, but time derivative fields are mapped to
+// the indices of their non-derivative compatriots.  This is used when
+// constructing stiffness, damping, and mass matrices, because the
+// column number in the C matrix corresponding to a field's time
+// derivative is the same as the column number in the K matrix
+// corresponding to the field itself.
 
-
+std::vector<int> Element::localDoFmap_noDerivs() const {
+  std::vector<int> dofmap(ndof(), -1);
+  for(CompoundField *field : CompoundField::allcompoundfields()) {
+    makeDoFmap_(this, *field, *field, dofmap);
+    makeDoFmap_(this, *field->out_of_plane(), *field->out_of_plane(), dofmap);
+    makeDoFmap_(this,
+		*field->time_derivative(),
+		*field,
+		dofmap);
+    makeDoFmap_(this,
+		*field->out_of_plane_time_derivative(),
+		*field->out_of_plane(),
+		dofmap);
+  }
+  return dofmap;
+}
 
 // Return a vector of the values of the Element's degrees of freedom,
-// in canonical order. 
+// in canonical order.  The canonical order is determined by
+// ElementFuncNodeIterator::localindex().
 
 DoubleVec Element::localDoFs(const FEMesh *mesh) const
 {
   DoubleVec doflist(ndof(), 0.0);
   for(std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++) {
     Field &field = *Field::all()[fi];
-    // loop over field components
-    for(IndexP fcomp : *field.components(ALL_INDICES)) {
-      // loop over nodes
-      for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
-	  !node->end(); ++*node)
-	{
-	  if(node->hasField(field)) {
+    for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
+	!node->end(); ++*node)
+      {
+	if(node->hasField(field)) {
+	  // loop over field components
+	  for(IndexP fcomp : *field.components(ALL_INDICES)) {
 	    DegreeOfFreedom *dof = field(*node, fcomp.integer());
-// 	    std::cerr << "Element::localDoFs: "
-// 		      << field << "[" << fcomp.integer() << "] "
-// 		      << node.node()->position() << " "
-// 		      << node.localindex(field, fcomp) << std::endl;
 	    doflist[node->localindex(field, fcomp)] = dof->value(mesh);
 	  }
 	}

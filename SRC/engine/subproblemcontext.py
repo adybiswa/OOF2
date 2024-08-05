@@ -169,6 +169,8 @@ class SubProblemContext(whoville.Who):
         return self.matrix_symmetry_K == symstate.ASYMMETRIC
     def asymmetricC(self):
         return self.matrix_symmetry_C == symstate.ASYMMETRIC
+    def asymmetricAlways(self):
+        return True
 
     def clone(self, newmesh, copy_field, copy_equation, notifications):
         # Create a copy of this subproblem in the given mesh, which is
@@ -977,20 +979,29 @@ class SubProblemContext(whoville.Who):
             self.matrix_method(self.asymmetricC).solve(C11, rhs, u1dot)
             self.time_stepper.set_derivs_part('C', linsys, u1dot, unknowns)
 
-    def computeFirstDerivs(self, linsys, unknowns):
+    def computeAuxFirstDerivs(self, linsys, unknowns, endValues):
+        #debug.fmsg()
         # Assuming that the independent fields have been solved for,
-        # compute the dependent first derivative fields.  See
-        # computeStaticFieldsL for some relevant comments.
+        # compute the dependent first derivative fields.  
 
-        # These independent dofs have been found by the solver:
+        # This is a post-processing operation that should occur after
+        # computing a static step or time step.
+
+        # The time derivative field solved for here *is* defined in
+        # the subproblem (so it has entries in self.startValues) but
+        # it's not in the unknowns vector.
+
         u1 = self.time_stepper.get_unknowns_part('C', linsys, unknowns)
-        u0 = self.time_stepper.get_unknowns_part('K', linsys, unknowns)
-        u2 = self.time_stepper.get_unknowns_part('M', linsys, unknowns)
-        u2dot = self.time_stepper.get_derivs_part('M', linsys, unknowns)
-
         u1dot = doublevec.DoubleVec(len(u1), 0.0)
-
+        #debug.fmsg(f"{len(u1)=}")
         if len(u1) > 0:
+            # These independent dofs (and u1) have been found by the
+            # solver (See comment in computeStaticFieldsL for
+            # definitions):
+            u0 = self.time_stepper.get_unknowns_part('K', linsys, unknowns)
+            u2 = self.time_stepper.get_unknowns_part('M', linsys, unknowns)
+            u2dot = self.time_stepper.get_derivs_part('M', linsys, unknowns)
+
             # Find u1dot by solving C12*u2dot + C11*u1dot + K*u = rhs
             #                 where K*u = K_12*u2 + K_11*u1 + K_10*u0
             C12 = linsys.C_submatrix('C', 'M')
@@ -1001,10 +1012,23 @@ class SubProblemContext(whoville.Who):
             rhs = self.time_stepper.rhs_ind_part('C', linsys)
             # TODO: is there a simpler way of computing K*u?
             rhs -= (C12*u2dot + K12*u2 + K11*u1 + K10*u0)
-            self.matrix_method(self.asymmetricC).solve(C11, rhs, u1dot)
-            # Now what?
-        return u1dot
+            #debug.fmsg(f"{rhs=}")
+            #debug.fmsg("Solving for u1dot")
+            #debug.fmsg(f"{C11=}")
+            #self.matrix_method(self.asymmetricC).solve(C11, rhs, u1dot)
+            self.matrix_method(self.asymmetricAlways).solve(C11, rhs, u1dot)
+            # debug.fmsg(f"{u1dot=}")
 
+            # TODO: What about the z components of the time derivatives?
+            # TODO: Also: time derivatives also need to be calculated
+            # for time-dependent fixed boundary conditions.
+
+            # Store result in endValues, which is a vector of all
+            # Field values in the subproblem (not just the unknowns),
+            # such as returned by CSubProblem::get_meshdofs().
+            linsys.set_unknowns_Cdot_inplace(u1dot, endValues)
+
+            
     ## Time stepping utilities
 
     def startStep(self, linsys, time):
@@ -1012,23 +1036,74 @@ class SubProblemContext(whoville.Who):
         self.startValues = self.getObject().get_meshdofs()
 
     def get_unknowns(self, linsys):
+        # TimeStepper.get_unknowns() calls either
+        # LinearizedSystem.get_unknowns_MCKa(),
+        # LinearizedSystem.get_unknowns_MCKd(), or
+        # LinearizedSystem.get_unknowns_MCK(), depending on whether
+        # the stepper uses auxiliary equations, first derivatives, or
+        # neither.
         return self.time_stepper.get_unknowns(linsys, self.startValues)
 
     def endStep(self, linsys, stepResult):
-        # Called by evolve after successfully taking a time step.
+        # Called by evolve_to() after successfully taking a time step.
         # Merges the vector of solved values (unknowns) with the
         # subproblem's vector of all values, and stores the result as
-        # endValues.  It's *not* stored as startValues until the step
-        # is accepted and moveOn is called (which may not happen
-        # immediately if there are other subproblems).
-        #
+        # self.endValues.  It also computes first derivative fields that
+        # weren't solved for, but are now known.
+
         # stepResult is a timestepper.StepResult instance.
-        # set_unknowns injects stepResult.endValues (the final values
-        # of the unknowns) into a copy of self.startValues, and
+        # set_unknowns() injects stepResult.endValues (the final
+        # values of the unknowns) into a copy of self.startValues, and
         # returns the result.
+
+        ## TODO: StepResult.endValues is a different kind of vector
+        ## than SubProblem.endValues.  The one is StepResult is a
+        ## vector of unknowns.  The one in SubProblem contains all the
+        ## dofs.  Change the name of one of them.
+
         ## TODO OPT: reuse self.endValues if possible
         self.endValues = self.time_stepper.set_unknowns(
             linsys, stepResult.endValues, self.startValues)
+
+        ## TODO:
+        ##
+        ## A first order stepper for a first order problem won't set
+        ## the time derivative fields in set_unknowns().  For example,
+        ## an Euler stepper for thermal diffusion will compute T(t)
+        ## but not dT/dt, although it will compute dU/dt for
+        ## elasticity (because dU/dt is an auxiliary field).
+        ##
+        ## The missing first order deriv values are not present in the
+        ## unknowns vector.  The unknowns vector is built by
+        ## TimeStepper.get_unknowns(), which calls
+        ## LinearizedSystem.get_unknowns_MCKa() or
+        ## get_unknowns_MCKd().  get_unknowns_MCKa() only includes
+        ## derivatives that correspond to non-empty columns of M, so
+        ## it doesn't copy first derivs of dofs that are only in C.
+        ## And get_unknowns_part() doesn't either, because it operates
+        ## on the result of get_unknowns_MCKa().
+        ##
+        ## We need to use LinearizedSystem.nonEmptyCColMap() to get
+        ## the first order dofs that need to be computed after the
+        ## solution is complete.
+        ##
+        ## computeAuxFirstDerivs() can not be called in
+        ## set_mesh_dofs().  set_mesh_dofs() is called by
+        ## installValues(), moveOn(), and make_linear_system(), where
+        ## it interpolates other problems.  But
+        ## computeAuxFirstDerivs() needs to know the matrices, and
+        ## therefore can only be called after make_linear_system() is
+        ## done.  So calling it here in endStep() is correct.
+        ##
+        ## stepResult is passed to endStep() in evolve_to().  It's a
+        ## StepResult object (from timestepper.py).  stepResult was
+        ## created by a time stepper (eg ForwardEuler).
+        ## stepResult.endValues contains the computed values of all
+        ## the unknowns.
+        ##
+        
+        self.computeAuxFirstDerivs(linsys, stepResult.endValues, self.endValues)
+        
         self.endTime = stepResult.endTime
         self.solutiontimestamp.increment()
 
@@ -1037,6 +1112,18 @@ class SubProblemContext(whoville.Who):
         # known as 'unknowns') into the FEMesh, and expand the
         # floating BCs.  This does *not* set any values in the
         # SubProblemContext except for self.installedTime.
+
+        # installValues() is called before any call to
+        # make_linear_system() to ensure that the matrices are
+        # constructed with the latest dofs (in case of nonlinearity).
+        # Therefore, installValues() and set_mesh_dofs() can't do
+        # anything (like calling computeAuxFirstDerivs()) that requires
+        # knowing the matrices.
+        #
+        # TODO: Why doesn't make_linear_system() call
+        # install_values()?  Is installValues() ever called in other
+        # circumstances?  Yes -- it's called by
+        # initializeStaticFields() after calling computeStaticFields().
 
         # set_unknowns() inserts the known values into a copy of
         # startValues, and returns the result.  Note that if there are
@@ -1052,10 +1139,17 @@ class SubProblemContext(whoville.Who):
         # set_mesh_dofs() is like installValues(), but it starts with
         # the full list of subproblem values (such as startValues or
         # endValues) instead of a list of unknowns.
+        
+        # Called by SubProblemContext.moveOn(),
+        # SubProblemContext.make_linear_system(), and
+        # SubProblemContext.installValues()
+        
         self.installedTime = time
+
         # Copy from vals into the mesh.  After this, all dofs in the
         # same FloatBC have the value of that BC's reference point.
-        changed = self.getObject().set_meshdofs(vals)
+        changed = self.getObject().set_meshdofs(vals) 
+        
         # Apply the FloatBC profiles, giving the dofs in the FloatBCs
         # their true values.
         self.getParent().getObject().expand_float_bcs(self.getObject(), time)
@@ -1094,7 +1188,9 @@ class SubProblemContext(whoville.Who):
 
     def moveOn(self):           # Get ready for the next time step
         self.set_mesh_dofs(self.endValues, self.endTime)
-        self.startValues = self.endValues.clone()
+        ## TODO: Is setting startValues necessary here? It was already
+        ## done by endStep(), which is called earlier in evolve_to().
+        #self.startValues = self.endValues.clone()
         self.startTime = self.endTime
         self.endTime = None
 

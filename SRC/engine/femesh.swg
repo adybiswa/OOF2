@@ -117,7 +117,7 @@ public:
   // CSubProblem *getCurrentSubProblem();
 
   double get_dofvalue(int);
-  void dumpDoFs(char*);		// for debugging
+  void dumpDoFs(const std::string&); // for debugging
 
   %newobject getFieldSetByID;
   std::vector<std::string> *getFieldSetByID(int);

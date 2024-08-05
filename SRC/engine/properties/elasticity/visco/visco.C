@@ -1,6 +1,5 @@
 // -*- C++ -*-
 
-
 /* This software was produced by NIST, an agency of the U.S. government,
  * and by statute is not subject to copyright in the United States.
  * Recipients of this software assume all responsibilities associated
@@ -18,7 +17,6 @@
 #include "engine/elementnodeiterator.h"
 #include "engine/femesh.h"
 #include "engine/smallsystem.h"
-
 
 CViscoElasticity::CViscoElasticity(const std::string &nm,
 				   PyObject *registration, Cijkl &g)
@@ -54,30 +52,31 @@ void CViscoElasticity::flux_matrix(const FEMesh *mesh,
   double dsf0 = nu.dshapefunction(0, x);
   double dsf1 = nu.dshapefunction(1, x);
 
-  Field *td = displacement->time_derivative();
-
   for(IndexP ij : *flux->components(ALL_INDICES)) {
     // loop over displacement components for in-plane strain contributions
-    for(IndexP ell : *td->components(ALL_INDICES)) {
+    for(IndexP ell : *displacement->components(ALL_INDICES)) {
       // loop over k=0,1 is written out explicitly to save a tiny bit of time
       SymTensorIndex ell0(0, ell.integer());
       SymTensorIndex ell1(1, ell.integer());
-      fluxmtx->damping_matrix_element(ij, td, ell, nu) -=
-	g_ijkl(ij, ell0)*dsf0 + g_ijkl(ij, ell1)*dsf1;
+      fluxmtx->damping_matrix_element(ij, displacement, ell, nu)
+	-= g_ijkl(ij, ell0)*dsf0 + g_ijkl(ij, ell1)*dsf1;
     }
 
     // loop over out-of-plane strains
     if(!displacement->in_plane(mesh)) {
-      //Field *oop = displacement->out_of_plane();
-      Field *oop = displacement->out_of_plane_time_derivative();
-      for(IndexP ell : *oop->components(ALL_INDICES)) {
+      Field *oopfield = displacement->out_of_plane();
+      for(IndexP ell : *oopfield->components(ALL_INDICES)) {
 	double diag_factor = ( ell.integer()==2 ? 1.0 : 0.5);
-	fluxmtx->damping_matrix_element(ij, oop, ell, nu)
+	fluxmtx->damping_matrix_element(ij, oopfield, ell, nu)
 	  -= g_ijkl(ij, SymTensorIndex(2, ell.integer())) * sf * diag_factor;
       }
     }
   }
 }
+
+// THIS VERSION ONLY WORKS IF THE TIME DERIVATIVE FIELD IS
+// DEFINED AT THE NODES. findGeometricStrainRate will return zeros if
+// the time derivative field isn't defined.
 
 // void CViscoElasticity::flux_value(const FEMesh *mesh, const Element *element,
 // 				  const Flux *flux, const MasterPosition &pt,

@@ -79,7 +79,7 @@ public:
 
   %newobject new_linear_system;
   LinearizedSystem *new_linear_system(double);
-  void make_linear_system(LinearizedSystem *, CNonlinearSolver*);
+  void make_linear_system(LinearizedSystem*, CNonlinearSolver*);
 
   %newobject all_compound_fields;
   // Don't use MAKE_LISTVEC_TYPEMAPS for CompoundField
@@ -116,6 +116,7 @@ public:
   bool set_meshdofs(DoubleVec*);
   %newobject get_meshdofs;
   DoubleVec *get_meshdofs();
+  // void set_meshAuxDerivs(DoubleVec*, LinearizedSystem*, DoubleVec*);
 
   void set_slaveDoF(int);
   void clear_slaveDoFs();

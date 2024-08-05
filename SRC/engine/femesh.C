@@ -536,17 +536,39 @@ void FEMesh::get_dofvalues(DoubleVec &x, const DoFMap &mesh2subpDoFMap) const {
 // inverse, because the mesh-to-subproblem map is many-to-one if there
 // are floating boundary conditions, and we need all dofs in a FloatBC
 // to be updated.
+//
+// set_dofvalues() is only called by CSubProblem::set_meshdofs().  It
+// is the only way that DegreeOfFreedom values are changed, other than
+// when they're created or destroyed.
+//
+// TODO: Is that true?  Check for dof[i]->value(mesh) = x for
+// non-const mesh.
+
+// void FEMesh::dump22(const std::string &msg) const {
+//   std::cerr << "FEMesh::dump22 (" << msg << ") "
+// 	    << dofvalues << " "
+// 	    << (*dofvalues)[22] << std::endl;
+// }
 
 bool FEMesh::set_dofvalues(const DoubleVec &x, const DoFMap &mesh2subpmap,
-			   const std::set<int> &exclusions)
+			   const std::set<int> &exclusions,
+			   bool verbose)
 {
   bool changed = false;
+  if(verbose)
+    std::cerr << "FEMesh::set_dofvalues: map=" << mesh2subpmap << std::endl;
   for(DoubleVec::size_type i=0; i<mesh2subpmap.domain(); i++) {
     int j = mesh2subpmap[i];
     if(j != -1 && exclusions.find(j)==exclusions.end()) {
       double &val = dof[i]->value(this);
       changed |= (val != x[j]);
       val = x[j];
+      if(verbose) {
+	std::cerr << "FEMesh::set_dofvalues: i=" << i << " j=" << j
+		  << " dof=" << *dof[i]
+		  << " dofvalues=" << dofvalues
+		  << " val=" << val << std::endl;
+      }
     }
   }
   return changed;

@@ -88,6 +88,8 @@ public:
   void set_derivs_part_MCKa(char, DoubleVec*, DoubleVec*);
   void set_derivs_part_MCKd(char, DoubleVec*, DoubleVec*);
 
+  void set_unknowns_Cdot_inplace(DoubleVec*, DoubleVec*);
+
   %newobject extract_MCa_dofs;
   DoubleVec* extract_MCa_dofs(DoubleVec*);
   void inject_MCa_dofs(DoubleVec*, DoubleVec*);

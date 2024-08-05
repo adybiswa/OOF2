@@ -53,6 +53,8 @@ double DegreeOfFreedom::value(const FEMesh *mesh) const {
     return (*mesh->dofvalues)[index_];
   } 
 #else
+  // std::cerr << "DegreeOfFreedom::value 1: index=" << index_
+  // 	    << std::endl;
   return (*mesh->dofvalues)[index_];
 #endif
 }
@@ -78,6 +80,8 @@ double &DegreeOfFreedom::value(FEMesh *mesh) const {
     return (*mesh->dofvalues)[index_];
   } 
 #else
+  // std::cerr << "DegreeOfFreedom::value 2: index=" << index_
+  // 	    << std::endl;
   return (*mesh->dofvalues)[index_];
 #endif
 }

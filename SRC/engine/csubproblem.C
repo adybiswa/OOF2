@@ -574,6 +574,7 @@ void CSubProblem::clear_slaveDoFs() {
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
 bool CSubProblem::set_meshdofs(const DoubleVec *dofs) const {
+  // Only called by SubProblemContext.set_mesh_dofs().
   return mesh->set_dofvalues(*dofs, mesh2subpDoFMap, get_slaveDoFs());
 }
 

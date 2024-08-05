@@ -133,8 +133,8 @@ SmallSystem *Equation::initializeSystem(const Element *e) {
 // Equation::make_linear_system is called by
 // Material::make_linear_system after the Properties have computed the
 // flux matrix for the Flux at the current GaussPoint.
-// Equation::make_linear_system has to use the flux matrix to compute
-// the GaussPoints contribution to the global stiffness matrix.
+// Equation::make_linear_system uses the flux matrix to compute the
+// GaussPoint's contribution to the global stiffness matrix.
 
 void
 DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
@@ -160,8 +160,8 @@ DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
       dsf[i] = mu->dshapefunction(i, gpt);
 
     for(int eqcomp = 0; eqcomp < dim(); ++eqcomp) {
-      // Use the un-mapped row.  The matrix will be symmetrized,
-      // if possible, afterwards by the subproblem.
+      // Use the un-mapped row.  The matrix will be symmetrized
+      // afterwards by the subproblem, if possible.
       int global_row = nodaleqn( *mu->funcnode(), eqcomp )->ndq_index();
 
       FluxSysMap::iterator fi = fluxdata.find(fflux);
@@ -175,11 +175,11 @@ DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
 	  const SmallSparseMatrix &k = (*fi).second->kMatrix;
 
 	  // This loops over all dofs, not just the ones that
-	  // contribute to K.  That's ok, because k won't have
-	  // non-zero entries for dofs that don't contribute.  It's
-	  // easier to check k.nonzero() inside this loop than it is
-	  // to have a mapping scheme that allows a shorter dof vector
-	  // to be use.
+	  // contribute to K.  That's ok, because SmallSparseMatrix k
+	  // won't have non-zero entries for dofs that don't
+	  // contribute.  It's easier to check k.nonzero() inside this
+	  // loop than it is to have a mapping scheme that allows a
+	  // shorter dof vector to be used.
 	  int nldof = element->ndof();
 	  for(int ldof = 0; ldof < nldof; ++ldof) {
 	    // dofmap is the Element's localDoFmap, which maps local
@@ -223,7 +223,7 @@ DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
 	    // to be adjusted, or a different dofmap used.  Current
 	    // global_col assumes that damping_matrix_element was
 	    // called with the non-derivative field.  Maybe use an
-	    // additional map that coverts time-deriv indices to
+	    // additional map that converts time-deriv indices to
 	    // non-deriv indices?
 	    if(nonzero)
 	      linsys.insertC(global_row, global_col, sum*weight);
@@ -375,11 +375,11 @@ PlaneFluxEquation::make_linear_system(const CSubProblem *subproblem,
 	      // dofmap is the Element's localDoFmap, which maps local
 	      // Element dof indices to global ones.
 	      if(k.nonzero(fluxcomp, ldof)) {
-            int global_col = dofmap[ldof];
-            double value = -sf * k( fluxcomp, ldof );
-            linsys.insertK( global_row, global_col, value*weight );
-            if ( nlsolver->needsJacobian() )
-              linsys.insertJ( global_row, global_col, value*weight );
+		int global_col = dofmap[ldof];
+		double value = -sf * k( fluxcomp, ldof );
+		linsys.insertK( global_row, global_col, value*weight );
+		if ( nlsolver->needsJacobian() )
+		  linsys.insertJ( global_row, global_col, value*weight );
 	      }
 	    }
 	  }

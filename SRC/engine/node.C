@@ -21,7 +21,7 @@
 
 // To dump index information about DoFs and eqns, uncomment this line
 // and compile in debug mode.
-//#define VERBOSE_POINTDATA
+// #define VERBOSE_POINTDATA
 
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

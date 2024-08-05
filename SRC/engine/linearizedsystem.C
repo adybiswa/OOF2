@@ -101,6 +101,7 @@ LinearizedSystem::LinearizedSystem(const LinearizedSystem &other)
     subp2nonEmptyCRowMap(other.subp2nonEmptyCRowMap),
     subp2nonEmptyKRowMap(other.subp2nonEmptyKRowMap),
     subp2nonEmptyMDerivMap(other.subp2nonEmptyMDerivMap),
+    subp2nonEmptyCDerivMap(other.subp2nonEmptyCDerivMap),
 
     subp2MCKFieldMap(other.subp2MCKFieldMap),
     subp2MCKEqnMap(other.subp2MCKEqnMap),
@@ -199,6 +200,7 @@ void LinearizedSystem::resetFieldFlags() {
   dependenteqns_.resize(subproblem->mesh2subpEqnMap.range(), false);
 }
 
+// static
 void LinearizedSystem::resetFFlagsWrap(void *data, const Field &field,
 				   const Field &tdfield,
 				   bool tddefined) 
@@ -522,6 +524,11 @@ void LinearizedSystem::fixeqn(const NodalEquation *eqn) {
 // applied.  It builds the maps that will be modified by FloatBCs.
 // Maps that depend on the modified maps are built later by
 // build_MCK_maps().
+// SubProblemContext.make_linear_system() calls
+//   LinearizedSystem::build_submatrix_maps()
+//   FEMesh::invoke_float_bcs()
+//   LinearizedSystem::build_MCK_maps()
+// in that order.
 
 void LinearizedSystem::build_submatrix_maps() {
   int ndof = subproblem->mesh2subpDoFMap.range();
@@ -560,6 +567,10 @@ void LinearizedSystem::build_submatrix_maps() {
 }
 
 void LinearizedSystem::build_MCK_maps() {
+  // build_MCK_maps() is called after FEMesh::invoke_float_bcs() and
+  // before FEmesh::invoke_fixed_bcs() by
+  // SubProblemContext::make_linear_system().
+  
   mesh2fixedFieldMap = compose(subproblem->mesh2subpDoFMap, subp2fixedFieldMap);
 
   // Construct the actual matrices so that we can build the level 3
@@ -567,6 +578,12 @@ void LinearizedSystem::build_MCK_maps() {
 
   // TODO OPT: These should be SparseSubMats.
 
+  // TODO: K_indfree_, etc, don't need to be stored in
+  // LinearizedSystem.  They're only used here and in dumpAll(), which
+  // is just for debugging.  Copying them when a LinearizedSystem is
+  // copied is a waste of time.  K_indfixed_, etc, do need to be
+  // stored, though.
+  
   // TODO OPT: We wouldn't need these matrices to be constructed
   // explicitly if we had a way of computing the empty[MCK]Maps
   // directly from the other maps and K_, C_, and M_.
@@ -639,6 +656,8 @@ void LinearizedSystem::build_MCK_maps() {
 			subp2freeFieldMap.domain(), subproblem->dof2Deriv);
     subp2nonEmptyMDerivMasterMap = tempM.translateDomain(
 			subp2freeFieldMap.domain(), subproblem->dof2Deriv);
+    subp2nonEmptyCDerivMap = subp2nonEmptyCColMap.translateDomain(
+			subp2freeFieldMap.domain(), subproblem->dof2Deriv);
     subp2MCKDerivMap = subp2MCKFieldMap.translateDomain(
 			subp2freeFieldMap.domain(), subproblem->dof2Deriv);
     subp2MCKDerivMasterMap = subp2MCKFieldMasterMap.translateDomain(
@@ -646,11 +665,11 @@ void LinearizedSystem::build_MCK_maps() {
   }
 
   // static bool once = false;
-  // if(not once) {
+  // if(!once) {
   //   once = true;
-  //   dumpMaps();
+  //   dumpMaps("");
   //   dumpFields("");
-    // }
+  //   }
 } // end build_MCK_maps
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -744,7 +763,7 @@ void LinearizedSystem::do_dumpFields(ostream &os) const {
 
 DoubleVec *LinearizedSystem::get_unknowns_MCK(const DoubleVec *source) const {
   DoubleVec *unknowns = subp2MCKFieldMap.extract(*source);
-  subp2MCKFieldMasterMap.extract(*source, *unknowns, 0);
+  subp2MCKFieldMasterMap.extract(*source, *unknowns, 0); // dofs for floatBCs
   return unknowns;
 }
 
@@ -753,9 +772,9 @@ DoubleVec *LinearizedSystem::get_unknowns_MCKa(const DoubleVec *source) const {
   int n = subp2MCKFieldMap.range();
   DoubleVec *unknowns = new DoubleVec(n+n2);
   subp2MCKFieldMap.extract(*source, *unknowns, 0);
-  subp2MCKFieldMasterMap.extract(*source, *unknowns, 0);
+  subp2MCKFieldMasterMap.extract(*source, *unknowns, 0); // dofs for floatBCs
   subp2nonEmptyMDerivMap.extract(*source, *unknowns, n);
-  subp2nonEmptyMDerivMasterMap.extract(*source, *unknowns, n);
+  subp2nonEmptyMDerivMasterMap.extract(*source, *unknowns, n); // for floatBCs
   return unknowns;
 }
 
@@ -818,6 +837,13 @@ DoubleVec *LinearizedSystem::set_unknowns_MCKd(const DoubleVec *src,
   subp2MCKFieldMap.inject(*src, 0, *result);
   subp2MCKDerivMap.inject(*src, n, *result);
   return result;
+}
+
+void LinearizedSystem::set_unknowns_Cdot_inplace(const DoubleVec *src,
+						 DoubleVec *dest)
+  const
+{
+  subp2nonEmptyCDerivMap.inject(*src, *dest);
 }
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -916,6 +942,8 @@ DoubleVec *LinearizedSystem::get_derivs_part_MCKa(char which,
 						  const DoubleVec *src)
   const
 {
+  // First derivs are only stored for fields that have second
+  // derivatives in the equations.
   assert(which == 'M');
   unsigned int n2 = n_unknowns_part('M');
   unsigned int n1 = n_unknowns_part('C');
@@ -943,6 +971,8 @@ void LinearizedSystem::set_derivs_part_MCKa(char which, const DoubleVec *src,
 					    DoubleVec *dest)
   const
 {
+  // First derivs are only stored for fields that have second
+  // derivatives in the equations.
   assert(which == 'M');
   unsigned int n2 = n_unknowns_part('M');
   unsigned int n1 = n_unknowns_part('C');

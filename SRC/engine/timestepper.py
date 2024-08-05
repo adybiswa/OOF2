@@ -48,12 +48,12 @@ class StepDriver(registeredclass.RegisteredClass):
     def evaluateBeginning(self):
         return self.stepper.evaluateBeginning()
 
-    ## require_timederiv indicates whether the stepping method
-    ## requires that first order time derivative fields be defined
-    ## even if the equations being solved do not contain second order
-    ## time derivatives.  Usually this isn't the case.  If it is,
-    ## though, the stepper's Registration should contain
-    ## 'require_timederiv=True'.
+    # require_timederiv_field() indicates whether the stepping method
+    # requires that first order time derivative fields be defined even
+    # if the equations being solved do not contain second order time
+    # derivatives.  Usually this isn't the case.  If it is, though,
+    # the stepper's Registration should contain
+    # 'require_timederiv=True'.
     def require_timederiv_field(self):
         return self.stepper.require_timederiv_field()
 
@@ -178,7 +178,9 @@ class NonLinearStepper(TimeStepper):
 
 # NLData is used to pass data through to the nonlinearsolvers.
 # NonLinearStepper subclasses can use this class, derive from it, or
-# define their own data container if necessary.
+# define their own data container if necessary (although
+# SubProblemContext.computeStaticFieldsNL() will have to be modified
+# to do that, since it currently explicitly creates a NLData object).
 
 class NLData:
     def __init__(self, subproblem, linsys, time):

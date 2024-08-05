@@ -38,8 +38,8 @@ class NodalEquation;
 //  * The K (stiffness) matrix multiplies the degrees of
 //    freedom directly.
 //
-//  * The C (damping) matrix is the matrix which multiplies
-//    the first time derivatives of the degrees of freedom.
+//  * The C (damping) matrix multiplies the first time derivatives of
+//    the degrees of freedom.
 //
 //  * The M (mass) matrix multiplies the second time derivatives.
 //
@@ -134,6 +134,7 @@ private:
   DoFMap subp2nonEmptyCRowMap;
   DoFMap subp2nonEmptyKRowMap;
   DoFMap subp2nonEmptyMDerivMap;
+  DoFMap subp2nonEmptyCDerivMap;
   // Level skipping and aggregating maps.
   DoFMap subp2MCKFieldMap;
   DoFMap subp2MCKEqnMap;
@@ -148,17 +149,17 @@ private:
   DoFMap subp2MCKDerivMasterMap;       // level 2-3
 
 
+public:
   // subp2nonEmptyColMap(which) returns the nonEmpty[MCK]ColMap for
   // the dofs whose maximum order derivative is which.  which must be
   // 'M', 'C', or 'K'.
-  const DoFMap& subp2nonEmptyColMap(char) const;
+  const DoFMap &subp2nonEmptyColMap(char) const;
   // Same, for nonEmpty[MCK]RowMap;
   const DoFMap &subp2nonEmptyRowMap(char) const;
   const DoFMap &indepEqn2nonEmptyRowMap(char) const;
 
-  // Utility function used by constructor.
-  // static void mapField(void *, const Field&, const Field&, bool);
-  // void mapField_(const Field&, const Field&, bool);
+private:
+  // Utilities for resetFieldFlags
   static void resetFFlagsWrap(void*, const Field&, const Field&, bool);
   void resetFFlags(const Field&, const Field&, bool);
 
@@ -270,6 +271,8 @@ public:
   DoubleVec *set_unknowns_MCK(const DoubleVec*, const DoubleVec*) const;
   DoubleVec *set_unknowns_MCKa(const DoubleVec*, const DoubleVec*) const;
   DoubleVec *set_unknowns_MCKd(const DoubleVec*, const DoubleVec*) const;
+
+  void set_unknowns_Cdot_inplace(const DoubleVec*, DoubleVec*) const;
   
   // get_unknowns_part() extracts the M, C, or K part of a vector of
   // unknowns, such as that returned by get_unknowns_XXX(), above. 

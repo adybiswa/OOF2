@@ -208,9 +208,12 @@ void FluxProperty::make_flux_contributions(const FEMesh *mesh,
     }
 
   flux_offset(mesh, element, flux, pt, time, fluxdata);
-
-  if(nlsolver->needsResidual()) 
+  if(nlsolver->needsResidual()) {
+    // TODO: Check how nonlinear solvers use the residual.  Is it
+    // really just the static part of the flux?  What would happen
+    // with a nonlinear flux with a linear viscoelastic part?
     static_flux_value(mesh, element, flux, pt, time, fluxdata);
+  }
 
   // Reset 'recurse' before exiting, in case flux_matrix or
   // static_flux_value is called elsewhere.
@@ -246,25 +249,23 @@ void FluxProperty::flux_matrix(const FEMesh *mesh, const Element *element,
   int ncols = fluxdata->ncols();
   DoubleVec fluxVec0(nrows);
   DoubleVec fluxVec1(nrows);
-  SmallSystem fluxdata0( nrows, ncols );
-  SmallSystem fluxdata1( nrows, ncols );
+  SmallSystem fluxdata0(nrows, ncols);
+  SmallSystem fluxdata1(nrows, ncols);
   CSubProblem *subproblem = mesh->getCurrentSubProblem();
 
   // Get the current subproblem, to check if the fields are active
-  if ( !subproblem )
+  if(!subproblem)
     throw ErrProgrammingError("Current subproblem not defined",
 			      __FILE__, __LINE__);
 
   // Loop over all the fields (that the node might have)
-  for (std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++)
-  {
-    Field *field = &( *Field::all()[fi] );
-    if (node.hasField( *field ) && field->is_active( subproblem ))
-    {
+  for(std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++) {
+    Field *field = &(*Field::all()[fi]);
+    if(node.hasField(*field) && field->is_active(subproblem)) {
       // Loop over field components
       for(IndexP fieldcomp : *field->components(ALL_INDICES)) {
 	DegreeOfFreedom *dof = (*field)(node, fieldcomp.integer());
-	double oldValue = dof->value( mesh );
+	double oldValue = dof->value(mesh);
 
 	// Scale eps by original value for robustness
 	double eps = max(min_eps, fabs(oldValue)* deriv_eps); 
@@ -273,17 +274,17 @@ void FluxProperty::flux_matrix(const FEMesh *mesh, const Element *element,
 	double dnValue = oldValue - eps;
 
 	// First compute fluxVec0 = sigma(u-eps)
-	dof->setValue( mesh, dnValue );
+	dof->setValue(mesh, dnValue);
 	static_flux_value(mesh, element, flux, pt, time, &fluxdata0);
 	fluxVec0 = fluxdata0.fluxVector();
 
 	// Now compute fluxVec1 = sigma(u+eps)
-	dof->setValue( mesh, upValue );
+	dof->setValue(mesh, upValue);
 	static_flux_value(mesh, element, flux, pt, time, &fluxdata1);
 	fluxVec1 = fluxdata1.fluxVector();
 
 	// Reset to original value!
-	dof->setValue( mesh, oldValue );
+	dof->setValue(mesh, oldValue);
 
 	// Compute the numerical derivative: (fluxVec1 - fluxVec0) / 2*eps
 	fluxVec1 -= fluxVec0;
@@ -291,22 +292,22 @@ void FluxProperty::flux_matrix(const FEMesh *mesh, const Element *element,
 
 	// Assign the derivative value to flux_matrix
 	for(IndexP fluxcomp : *flux->components(ALL_INDICES))
-	  fluxdata->stiffness_matrix_element( fluxcomp, field, fieldcomp, node )
-	    += fluxVec1[ fluxcomp.integer() ];
+	  fluxdata->stiffness_matrix_element(fluxcomp, field, fieldcomp, node)
+	    += fluxVec1[fluxcomp.integer()];
 
 	  fluxdata0.fluxVector().zero();
 	  fluxdata1.fluxVector().zero();
       } // loop over field components
-    } // end if (node.hasfield())
+    } // end if(node.hasfield())
   } // loop over all fields
 
 } // end of 'FluxProperty::flux_matrix'
 
 //=\\=//=\\=//=\\=//
 
-// The default computation for the static part of the flux
+// The default computation for the flux
 //
-//    flux = flux_matrix * field + flux_offset
+//    flux = flux_matrix*field + flux_matrix'*field_t + flux_offset
 //
 // This is the default computation if the flux property does not
 // specify its own definition.
@@ -351,13 +352,23 @@ void FluxProperty::static_flux_value(const FEMesh *mesh, const Element *element,
 
   fluxdata->fluxVector() += localFluxData.offsetVector();
   fluxdata->fluxVector() += localFluxData.kMatrix*localdofs;
-  // localdofs includes time derivative fields.  So we can do this:
+
+  // TODO: Check to see if localdofs includes time derivatives.  If it
+  // doesn't, then compute dU/dt by inverting C?  Do we have enough
+  // information to do that?  It should be done only once for the
+  // whole Mesh, if possible.
+  // What if dU/dt is in localdofs for some nodes but not
+  // others?
   //
+  // Don't worry about Property::flux_matrix() trying to numerically
+  // differentiate this function.  If flux_matrix() isn't redefined in
+  // the subclass, then static_flux_value() must be redefined, so this
+  // version of static_flux_value() won't be used.
+
+  
+  // If localdofs includes time derivative fields we can do this:
   fluxdata->fluxVector() += localFluxData.cMatrix*localdofs;
-  //
-  // Right? Wrong.  Only if SmallSystem::damping_matrix_element was
-  // called with the time derivative field, which it's not.
-  //
+  
   // std::cerr << "FluxProperty::static_flux_value: localdofs=" << localdofs.size()
   // 	    << " kMatrix=(" << localFluxData.kMatrix.rows()
   // 	    << "," << localFluxData.kMatrix.cols() << ")"
@@ -418,25 +429,23 @@ void EqnProperty::force_deriv_matrix(const FEMesh *mesh, const Element *element,
   int nrows = eqndata->nrows();
   int ncols = eqndata->ncols();
   DoubleVec forceVec0(nrows), forceVec1(nrows);
-  SmallSystem eqndata0( nrows, ncols );
-  SmallSystem eqndata1( nrows, ncols );
+  SmallSystem eqndata0(nrows, ncols);
+  SmallSystem eqndata1(nrows, ncols);
 
   // Get the current subproblem, to check if the fields are active
   CSubProblem *subproblem = mesh->getCurrentSubProblem();
-  if ( !subproblem )
+  if(!subproblem)
     throw ErrProgrammingError("Current subproblem not defined",
 			      __FILE__, __LINE__);
 
   // Loop over all the fields (that the node might have)
-  for(std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++)
-  {
-    Field *field = &( *Field::all()[fi] );
-    if (node.hasField( *field ) && field->is_active( subproblem ))
-    {
+  for(std::vector<Field*>::size_type fi=0; fi<Field::all().size(); fi++) {
+    Field *field = &(*Field::all()[fi]);
+    if(node.hasField(*field) && field->is_active(subproblem)) {
       // Loop over field components
       for(IndexP fieldcomp : *field->components(ALL_INDICES)) {
 	DegreeOfFreedom *dof = (*field)(node, fieldcomp.integer());
-	double oldValue = dof->value( mesh );
+	double oldValue = dof->value(mesh);
 
 	// Scale eps by original value for robustness
 	double eps = max(min_eps, fabs(oldValue) * deriv_eps);
@@ -444,15 +453,15 @@ void EqnProperty::force_deriv_matrix(const FEMesh *mesh, const Element *element,
 	double dnValue = oldValue - eps;
 
 	// First compute forceVec0 = f(u-eps)
-	dof->setValue( mesh, dnValue );
+	dof->setValue(mesh, dnValue);
 	force_value(mesh, element, eqn, pt, time, &eqndata0);
 	forceVec0 = eqndata0.forceVector();
 
 	// Now compute forceVec1 = f(u+eps)
-	dof->setValue( mesh, upValue );
+	dof->setValue(mesh, upValue);
 	force_value(mesh, element, eqn, pt, time, &eqndata1);
 	forceVec1 = eqndata1.forceVector();
-	dof->setValue( mesh, oldValue );
+	dof->setValue(mesh, oldValue);
 
 	// Compute the numerical derivative: (f1 - f0) / (2*eps)
 	forceVec1 -= forceVec0;
@@ -460,7 +469,7 @@ void EqnProperty::force_deriv_matrix(const FEMesh *mesh, const Element *element,
 
 	// Assign the derivative value to force_deriv_matrix
 	for(IndexP eqncomp : *eqn->components())
-	  eqndata->force_deriv_matrix_element( eqncomp, field, fieldcomp, node )
+	  eqndata->force_deriv_matrix_element(eqncomp, field, fieldcomp, node)
 	    += forceVec1[ eqncomp.integer() ];
 
 	eqndata0.forceVector().zero();

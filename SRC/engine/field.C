@@ -30,22 +30,22 @@
 #include <vector>
 
 std::vector<Field*> &Field::all() {
-  static std::vector<Field*> all_fields;
-  return all_fields;
+  // This is used by getFieldByIndex(), and by Element::localDoFmap()
+  // and Element::localDoFs(), where it determines the order in which
+  // the degrees of freedom appear in vectors.  The order is
+  // important, so the Fields are stored in a vector and not a map.
+  static std::vector<Field*> all_fields_;
+  return all_fields_;
 }
 
 std::vector<CompoundField*> &CompoundField::allcompoundfields() {
-  static std::vector<CompoundField*> all_fields;
-  return all_fields;
+  static std::vector<CompoundField*> all_fields_;
+  return all_fields_;
 }
 
 Field *getFieldByIndex(int index) {
   // getFieldByIndex is used by FEMesh::getFieldSetByID, which returns
   // a list of fields in the order in which they were defined.
-  // Currently, this may be the only reason that Field::all() returns
-  // a std::vector instead of a std::map.  A std::map would otherwise
-  // be more natural, but the ordering is important, so a map can't be
-  // used.
   return Field::all()[index];
 }
 
@@ -351,6 +351,9 @@ DegreeOfFreedom *ScalarFieldBase::operator()(const ElementFuncNodeIterator &ei)
 DegreeOfFreedom *ScalarFieldBase::operator()(const FuncNode *node,
 					     int component) const
 {
+  // std::cerr << "ScalarFieldBase::operator() "
+  // 	    << *node->doflist[node->fieldset.offset(this)]
+  // 	    << std::endl;
   assert(component == 0);
   // offset() will raise ErrNoSuchField if this field isn't defined at the node.
   return node->doflist[node->fieldset.offset(this)];
