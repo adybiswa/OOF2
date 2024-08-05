@@ -3182,6 +3182,165 @@ class ThermalExpansionTest(unittest.TestCase):
         
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
+class OOF_ViscoElasticity(unittest.TestCase):
+    def setUp(self):
+        OOF.Microstructure.New(
+            name='microstructure',
+            width=1.0, height=1.0,
+            width_in_pixels=10, height_in_pixels=10)
+        OOF.Material.New(
+            name='material', material_type='bulk')
+        # TODO: Use named properties and delete them afterwards
+        OOF.Property.Copy(
+            property='Mechanical:Elasticity:Isotropic',
+            new_name='instance')
+        OOF.Property.Parametrize.Mechanical.Elasticity.Isotropic.instance(
+            cijkl=IsotropicRank4TensorBulkShear(bulk=0.5,shear=0.25))
+        OOF.Material.Add_property(
+            name='material', property='Mechanical:Elasticity:Isotropic:instance')
+        OOF.Property.Copy(
+            property='Mechanical:ForceDensity:ConstantForceDensity',
+            new_name='instance')
+        OOF.Property.Parametrize.Mechanical.ForceDensity.ConstantForceDensity.instance(
+            gx=0.0, gy=-0.3)
+
+        OOF.Property.Copy(
+            property='Mechanical:MassDensity:ConstantMassDensity',
+            new_name='instance')
+        OOF.Property.Parametrize.Mechanical.MassDensity.ConstantMassDensity.instance(rho=1)
+
+        OOF.Material.Add_property(
+            name='material',
+            property='Mechanical:ForceDensity:ConstantForceDensity:instance')
+        OOF.Property.Copy(
+            property='Mechanical:MassDensity:ConstantMassDensity',
+            new_name='instance')
+        OOF.Property.Parametrize.Mechanical.MassDensity.ConstantMassDensity.instance(
+            rho=1.0)
+        OOF.Material.Add_property(
+            name='material',
+            property='Mechanical:MassDensity:ConstantMassDensity:instance')
+        
+        OOF.Property.Copy(
+            property="Mechanical:Viscosity:Isotropic",
+            new_name='instance')
+        OOF.Property.Parametrize.Mechanical.Viscosity.Isotropic.instance(
+            gijkl=IsotropicRank4TensorBulkShear(bulk=0.07,shear=0.25))
+        OOF.Material.Add_property(
+            name='material',
+            property='Mechanical:Viscosity:Isotropic:instance')
+        OOF.Material.Assign(
+            material='material',
+            microstructure='microstructure',
+            pixels=every)
+        OOF.Skeleton.New(
+            name='skeleton',
+            microstructure='microstructure',
+            x_elements=8, y_elements=8,
+            skeleton_geometry=QuadSkeleton(left_right_periodicity=False,
+                                           top_bottom_periodicity=False))
+        OOF.Mesh.New(
+            name='mesh',
+            skeleton='microstructure:skeleton',
+            element_types=['D2_2', 'T3_3', 'Q4_4'])
+        OOF.Subproblem.Field.Define(
+            subproblem='microstructure:skeleton:mesh:default',
+            field=Displacement)
+        OOF.Subproblem.Field.Activate(
+            subproblem='microstructure:skeleton:mesh:default',
+            field=Displacement)
+        OOF.Mesh.Field.In_Plane(
+            mesh='microstructure:skeleton:mesh',
+            field=Displacement)
+        OOF.Subproblem.Equation.Activate(
+            subproblem='microstructure:skeleton:mesh:default',
+            equation=Force_Balance)
+        OOF.Mesh.Boundary_Conditions.New(
+            name='bc',
+            mesh='microstructure:skeleton:mesh',
+            condition=DirichletBC(
+                field=Displacement, field_component='x',
+                equation=Force_Balance, eqn_component='x',
+                profile=ConstantProfile(value=0.0),
+                boundary='bottom'))
+        OOF.Mesh.Boundary_Conditions.New(
+            name='bc<2>',
+            mesh='microstructure:skeleton:mesh',
+            condition=DirichletBC(
+                field=Displacement, field_component='y', 
+                equation=Force_Balance, eqn_component='y',
+                profile=ConstantProfile(value=0.0),
+                boundary='bottom'))
+        OOF.Subproblem.Set_Solver(
+            subproblem='microstructure:skeleton:mesh:default',
+            solver_mode=AdvancedSolverMode(
+                time_stepper=AdaptiveDriver(
+                    tolerance=0.0001,
+                    initialstep=0.1,
+                    minstep=1e-05,
+                    errorscaling=AbsoluteErrorScaling(),
+                    stepper=TwoStep(singlestep=SS22(theta1=0.5,theta2=0.5))),
+                nonlinear_solver=NoNonlinearSolver(),
+                symmetric_solver=ConjugateGradient(
+                    preconditioner=ILUTPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=BiConjugateGradient(
+                    preconditioner=ILUTPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000)))
+    def tearDown(self):
+        OOF.Material.Delete(name='material')
+        OOF.Property.Delete(
+            property='Mechanical:Elasticity:Isotropic:instance')
+        OOF.Property.Delete(
+            property='Mechanical:ForceDensity:ConstantForceDensity:instance')
+        OOF.Property.Delete(
+            property='Mechanical:MassDensity:ConstantMassDensity:instance')
+        OOF.Property.Delete(
+            property='Mechanical:Viscosity:Isotropic:instance')
+
+    @memorycheck.check('microstructure')
+    def SS22(self):
+        filename = "viscomesh.dat"
+        OOF.Mesh.Set_Field_Initializer(
+            mesh='microstructure:skeleton:mesh',
+            field=Displacement,
+            initializer=ConstTwoVectorFieldInit(cx=0,cy=0))
+        OOF.Mesh.Set_Field_Initializer(
+            mesh='microstructure:skeleton:mesh',
+            field=Displacement_t,
+            initializer=ConstTwoVectorFieldInit(cx=0,cy=0))
+        OOF.Mesh.Apply_Field_Initializers_at_Time(
+            mesh='microstructure:skeleton:mesh',
+            time=0)
+        OOF.Mesh.Scheduled_Output.New(
+            mesh='microstructure:skeleton:mesh',
+            name='meshoutput',
+            output=MeshFileOutput())
+        OOF.Mesh.Scheduled_Output.Schedule.Set(
+            mesh='microstructure:skeleton:mesh',
+            output='meshoutput',
+            scheduletype=AbsoluteOutputSchedule(),
+            schedule=Periodic(delay=0,interval=1))
+        OOF.Mesh.Scheduled_Output.Destination.Set(
+            mesh='microstructure:skeleton:mesh',
+            output='meshoutput',
+            destination=DataFileOutput(filename=filename,
+                                       mode='w',format='ascii'))
+        OOF.Mesh.Solve(
+            mesh='microstructure:skeleton:mesh',
+            endtime=7.0)
+        self.assertTrue(file_utils.fp_file_compare(
+            filename,
+            os.path.join('mesh_data', filename),
+            1.e-6))
+        file_utils.remove(filename)
+
+
+    
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 
 static_set = [
     OOF_StaticIsoElastic("Null"),
@@ -3254,7 +3413,9 @@ def make_dynamic_set(suffix, shortening):
         OOF_ThermalElasticTimeSteppers("SS22ThermalOnly"),
         OOF_ThermalElasticTimeSteppers("SS22"),
         OOF_ThermalElasticTimeSteppers("CN"),
-        OOF_StaticAndDynamic("SS22PlaneStrain")
+        OOF_StaticAndDynamic("SS22PlaneStrain"),
+
+        OOF_ViscoElasticity("SS22")
     ]
     for t in tests:
         t.shortening = shortening
@@ -3271,10 +3432,13 @@ test_set = (static_set +
             make_dynamic_set(suffix="-short", shortening=0.1) +
             oop_periodic_set)
 
-## Uncomment this to run just a single test when debugging.
+## Uncomment this to run just a few tests when debugging.
 # test_set = [
-#     OOF_StaticAndDynamic("SS22PlaneStrain")
+#     #OOF_ViscoElasticity("SS22"),
+#     OOF_ThermalDiffusionTSPlaneFlux("CNSaveRestore")
 # ]
 # for test in test_set:
-#     test.shortening = 1
+#     test.shortening = 1.0
 #     test.suffix = ""
+#     # test.shortening = 0.1
+#     # test.suffix = "-short"

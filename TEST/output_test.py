@@ -28,8 +28,6 @@ class OOF_Output(unittest.TestCase):
         from ooflib.SWIG.engine import femesh, cskeleton
         global cmicrostructure
         from ooflib.SWIG.common import cmicrostructure
-        global allWorkers, allWorkerCores
-        from ooflib.common.worker import allWorkers, allWorkerCores
         global outputdestination
         from ooflib.engine.IO import outputdestination
         build_position_output_args()
@@ -1378,18 +1376,64 @@ class OOF_MiscOutput(OOF_Output):
                 1.e-8))
         file_utils.remove('test.dat')
         outputdestination.forgetTextOutputStreams()
+
+class OOF_ViscoOutput(unittest.TestCase):
+    def setUp(self):
+        global outputdestination
+        from ooflib.engine.IO import outputdestination
+        OOF.File.Load.Data(
+            filename=reference_file('mesh_data', 'viscomesh.dat'))
+    
+    def tearDown(self):
+        OOF.Material.Delete(name='material')
+        OOF.Property.Delete(
+            property='Mechanical:Elasticity:Isotropic:instance')
+        OOF.Property.Delete(
+            property='Mechanical:ForceDensity:ConstantForceDensity:instance')
+        OOF.Property.Delete(
+            property='Mechanical:MassDensity:ConstantMassDensity:instance')
+        OOF.Property.Delete(
+            property='Mechanical:Viscosity:Isotropic:instance')
+        
+    @memorycheck.check("microstructure")
+    def Stress(self):
+        OOF.Mesh.Analyze.Direct_Output(
+            mesh='microstructure:skeleton:mesh',
+            time=4.0,
+            data=getOutput('Flux:Value',flux=Stress),
+            domain=EntireMesh(),
+            sampling=GridSampleSet(
+                x_points=10,y_points=10,show_x=True,show_y=True),
+            destination=OutputStream(filename='test.dat',mode='w'))
+        # The reference file was generated using
+        # CViscoElasticity::flux_value(), which explicitly multiplies
+        # g_ijkl and strainrate.  It should give the same result as
+        # the generic Property::flux_value().
+        self.assertTrue(
+            fp_file_compare(
+                'test.dat',
+                os.path.join('output_data', 'viscostress.dat'),
+                1.e-8))
+        file_utils.remove('test.dat')
+        outputdestination.forgetTextOutputStreams()
         
 test_set = [
-    #OOF_Output("PDFOutput"),
+    ##OOF_Output("PDFOutput"),
     OOF_Output("PositionOutputs"),
     OOF_Output("ScalarOutputs"),
     OOF_Output("AggregateOutputs"),
     OOF_PlaneFluxRHS("StrainCheck"),
+
     OOF_AnisoPlaneStress("Avg"),
     OOF_BadMaterial("Analyze"),
     OOF_MiscOutput("Range"),
+    
     OOF_MiscOutput("RangeEdge"),
-    OOF_MiscOutput("RangeCS")
+    OOF_MiscOutput("RangeCS"),
+    OOF_ViscoOutput("Stress")
 ]
 
+# test_set = [
+#     OOF_ViscoOutput("Stress")
+#     ]
 

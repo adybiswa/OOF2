@@ -46,6 +46,9 @@ class OOF_PyProperties(unittest.TestCase):
                 matrix_method=BasicIterative(
                     tolerance=1e-13,max_iterations=1000)))
 
+    def tearDown(self):
+        OOF.Material.Delete(name='material')
+
     #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
     @memorycheck.check('microstructure')
@@ -96,18 +99,19 @@ class OOF_PyProperties(unittest.TestCase):
         self.heatCondTest()
 
         # Repeat the calculation with the C++ Heat Conductivity Property.
-        OOF.Property.Parametrize.Thermal.Conductivity.Isotropic(
-            kappa=1.0)
-        OOF.Material.Add_property(
-            name='material',
-            property='Thermal:Conductivity:Isotropic')
         OOF.Material.Remove_property(
             name='material',
             property='Thermal:Conductivity:PyIsotropic')
+        OOF.Property.Copy(
+            property="Thermal:Conductivity:Isotropic",
+            new_name="instance")
+        OOF.Property.Parametrize.Thermal.Conductivity.Isotropic.instance(
+            kappa=1.0)
+        OOF.Material.Add_property(
+            name='material',
+            property='Thermal:Conductivity:Isotropic:instance')
         self.heatCondTest()
-
-        OOF.Material.Delete(name="material")
-
+        OOF.Property.Delete(property="Thermal:Conductivity:Isotropic:instance")
 
     def heatCondTest(self):
         OOF.Mesh.Apply_Field_Initializers(
@@ -187,8 +191,6 @@ class OOF_PyProperties(unittest.TestCase):
             property='Mechanical:Elasticity:PyIsotropic')
         self.elasticityTest()
 
-        OOF.Material.Delete(name="material")
-
     def elasticityTest(self):
         OOF.Mesh.Apply_Field_Initializers(
             mesh='microstructure:skeleton:mesh')
@@ -261,8 +263,6 @@ class OOF_PyProperties(unittest.TestCase):
             name='material', 
             property='Mechanical:StressFreeStrain:PyIsotropic')
         self.stressFreeStrainTest()
-
-        OOF.Material.Delete(name="material")
 
     def stressFreeStrainTest(self):
         OOF.Mesh.Apply_Field_Initializers(
