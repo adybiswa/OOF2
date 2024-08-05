@@ -67,6 +67,14 @@ public:
   void load(const char *filename) {
     load_vec(*self, std::string(filename));
   }
+
+  // Accessing individual items from python is highly discouraged but
+  // is sometimes useful for debugging.
+  // double __getitem__(int i) {
+  //   return (*self)[i];
+  // }
+
+
 };
 
 %pythoncode "common/doublevec.spy"
