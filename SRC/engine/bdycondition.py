@@ -372,6 +372,10 @@ class DirichletBC(BC):
             # Field.setvalue() sets the value in the FEMesh's
             # dofvalues array.
             self.field.setvalue(subproblem.mesh, node, fldcomp, value)
+            tdfield = self.field.time_derivative()
+            if tdfield.is_defined(subproblem):
+                tdfield.setvalue(subproblem.mesh, node, fldcomp,
+                                 self.profile.evalTimeDerivative(location))
 
             eqncomp = self.equation.getIndex(self.eqn_component).integer()
             nodalEqn = self.equation.nodaleqn(node, eqncomp)
@@ -390,6 +394,10 @@ class DirichletBC(BC):
             return
         value = self.profile(location)
         self.field.setvalue(subproblem.mesh, node, fldcomp, value)
+        tdfield = self.field.time_derivative()
+        if tdfield.is_defined(subproblem):
+            tdfield.setvalue(subproblem.mesh, node, fldcomp,
+                             self.profile.evalTimeDerivative(location))
 
     def setDerivatives(self, subproblem, linsys, node, location):
         if self.is_disabled(subproblem):

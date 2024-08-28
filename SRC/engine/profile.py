@@ -144,6 +144,10 @@ class _ContinuumProfileX(Profile):
 
     def __call__(self, location):
         return self.function(*self.funcargs(location))
+    def evalTimeDerivative(self, location):
+        return 0.0
+    def evalTimeDerivative2(self, location):
+        return 0.0
     # Output.
     def description(self):
         return repr(self.function)
@@ -191,8 +195,8 @@ class _ContinuumProfileXTd(_ContinuumProfileXT):
         return self.timeDerivative2(*self.funcargs(location))
     
     def equiv(self,other):
-        return (other.__class__==self.__class__ and
-                (self.function==other.function and
+        return (other.__class__== self.__class__ and
+                (self.function == other.function and
                  self.timeDerivative == other.timeDerivative and
                  self.timeDerivative2 == other.timeDerivative2))
 
@@ -279,12 +283,14 @@ class ConstantProfile(Profile, ProfileX, ProfileXT, ProfileXTd):
     # Caller will provide "location", but we can discard it.
     def __call__(self, location):
         return self.value
+    def evalTimeDerivative(self, location):
+        return 0.0
+    def evalTimeDerivative2(self, location):
+        return 0.0
 
     def equiv(self,other):
-        if self.__class__==other.__class__:
-            if self.value==other.value:
-                return 1
-        return 0
+        return (self.__class__ == other.__class__ and
+                self.value == other.value)
     
     def description(self):
         return repr(self.value)
@@ -317,10 +323,9 @@ class LinearProfile(Profile, ProfileX, ProfileXT, ProfileXTd):
         return location.fraction*(self.end-self.start)+self.start
 
     def equiv(self, other):
-        if self.__class__==other.__class__:
-            if self.start==other.start and self.end==other.end:
-                return 1
-        return 0
+        return (self.__class__ == other.__class__ and
+                self.start == other.start and
+                self.end == other.end)
 
     def description(self):
         return "[%s->%s]" % (repr(self.start), repr(self.end))
