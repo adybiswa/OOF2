@@ -71,7 +71,56 @@ class IterativeMethods(unittest.TestCase):
         solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
         solver.solveMatrix(self.matrix, self.rhs, solution)
         self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+
+    def CG_IC(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ICPreconditioner()
+        solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+        
+    def GMRES(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.UnPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+        
+    def GMRES_ILU(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ILUPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+
+    def GMRES_ILU(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ILUPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+
+    def GMRES_ILUT(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ILUTPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
     
+    def GMRES_Jacobi(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.JacobiPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+    
+    def GMRES_IC(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ICPreconditioner()
+        solver = matrixmethod.GMRES(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+
     def BiCGStab(self):
         solution = doublevec.DoubleVec(0)
         pc = preconditioner.UnPreconditioner()
@@ -100,6 +149,16 @@ class IterativeMethods(unittest.TestCase):
         solver.solveMatrix(self.matrix, self.rhs, solution)
         self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
 
+    def BiCGStab_IC(self):
+        solution = doublevec.DoubleVec(0)
+        pc = preconditioner.ICPreconditioner()
+        solver = matrixmethod.StabilizedBiConjugateGradient(pc, self.tolerance, self.max_iterations)
+        solver.solveMatrix(self.matrix, self.rhs, solution)
+        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+
+    # matrixmethod.BiConjugateGradient is actually the same as
+    # matrixmethod.StabilizedBiConjugateGradient, and is included
+    # there only for backwards compatibility.
     def BiCG(self):
         solution = doublevec.DoubleVec(0)
         pc = preconditioner.UnPreconditioner()
@@ -294,6 +353,12 @@ iter_set = [
     IterativeMethods("CG_ILU"),
     IterativeMethods("CG_ILUT"),
     IterativeMethods("CG_Jacobi"),
+    IterativeMethods("CG_IC"),
+    IterativeMethods("GMRES"),
+    IterativeMethods("GMRES_ILU"),
+    IterativeMethods("GMRES_ILUT"),
+    IterativeMethods("GMRES_Jacobi"),
+    IterativeMethods("GMRES_IC"),
     IterativeMethods("BiCG"),
     IterativeMethods("BiCG_ILU"),
     IterativeMethods("BiCG_ILUT"),
@@ -302,6 +367,7 @@ iter_set = [
     IterativeMethods("BiCGStab_ILU"),
     IterativeMethods("BiCGStab_ILUT"),
     IterativeMethods("BiCGStab_Jacobi"),
+    IterativeMethods("BiCGStab_IC"),
 ]
 
 direct_set = [
@@ -313,9 +379,9 @@ direct_set = [
 
 bc_set = [
     BCTest("CG0"),
-    # BCTest("CG_ILU"), # doesn't converge
-    # BCTest("CG_ILUT"), # doesn't converge
-        BCTest("CG_Jacobi"),
+    #BCTest("CG_ILU"), # doesn't converge
+    #BCTest("CG_ILUT"), # doesn't converge
+    BCTest("CG_Jacobi"),
     BCTest("CG_IC"),
     BCTest("BiCG0"),      
     BCTest("BiCG_ILU"), 

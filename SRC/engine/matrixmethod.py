@@ -58,15 +58,26 @@ solver_map = {}
 solver_map["CG"] = {}
 solver_map["CG"]["Un"] = cmatrixmethods.CG_Unpre
 solver_map["CG"]["Diag"] = cmatrixmethods.CG_Diag
+solver_map["CG"]["IC"] = cmatrixmethods.CG_IC
+
+# TODO: CG is not guaranteed to work with the ILU
+# preconditioner. Delete the next two lines and in the GUI only list
+# the available proconditioners for each matrix method.
 solver_map["CG"]["ILUT"] = cmatrixmethods.CG_ILUT
 solver_map["CG"]["ILU"] = cmatrixmethods.CG_ILUT
-solver_map["CG"]["IC"] = cmatrixmethods.CG_IC
+
 solver_map["BiCGStab"] = {}
 solver_map["BiCGStab"]["Un"] = cmatrixmethods.BiCGStab_Unpre
 solver_map["BiCGStab"]["Diag"] = cmatrixmethods.BiCGStab_Diag
 solver_map["BiCGStab"]["ILUT"] = cmatrixmethods.BiCGStab_ILUT
 solver_map["BiCGStab"]["ILU"] = cmatrixmethods.BiCGStab_ILUT
 solver_map["BiCGStab"]["IC"] = cmatrixmethods.BiCGStab_IC
+solver_map["GMRES"] = {}
+solver_map["GMRES"]["Un"] = cmatrixmethods.GMRES_Unpre
+solver_map["GMRES"]["Diag"] = cmatrixmethods.GMRES_Diag
+solver_map["GMRES"]["ILUT"] = cmatrixmethods.GMRES_ILUT
+solver_map["GMRES"]["ILU"] = cmatrixmethods.GMRES_ILUT
+solver_map["GMRES"]["IC"] = cmatrixmethods.GMRES_IC
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -96,7 +107,7 @@ class ConjugateGradient(PreconditionedMatrixMethod):
                 raise ooferror.PyErrPyProgrammingError(
                     "%dx%d CG matrix is not symmetric!" %
                     (matrix.nrows(), matrix.ncols()))
-        # added to try and debug memory usage
+        # added to try to debug memory usage
         #subprocess.check_output(["oof2",'os.getpid()'])
         succ = self.solver.solve(matrix, rhs, solution)
         if succ != cmatrixmethods.SUCCESS: 
@@ -176,6 +187,45 @@ registeredclass.Registration(
             tip="Maximum number of iterations to perform.")],
     tip="Stabilized bi-conjugate gradient method for iteratively solving non-symmetric matrices.",
     discussion=xmlmenudump.loadFile('DISCUSSIONS/engine/reg/bicgstab.xml')
+)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+class GMRES(PreconditionedMatrixMethod):
+    def __init__(self, preconditioner, tolerance, max_iterations):
+        self.preconditioner = preconditioner
+        self.tolerance = tolerance
+        self.max_iterations = max_iterations
+        self.solver = solver_map["GMRES"][preconditioner.name]()
+        self.solver.set_max_iterations(max_iterations)
+        self.solver.set_tolerance(tolerance)
+    def solveMatrix(self, matrix, rhs, solution):
+        succ = self.solver.solve(matrix, rhs, solution)
+        if succ != cmatrixmethods.SUCCESS: 
+            if succ == cmatrixmethods.NOCONVERG:
+                raise ooferror.PyErrConvergenceFailure(
+                    "GMRES", self.solver.iterations())
+        return self.solver.iterations(), self.solver.error()
+
+registeredclass.Registration(
+    "GMRES",
+    MatrixMethod,
+    GMRES,
+    ordering=2.1,
+    symmetricOnly=False,
+    params=[
+        parameter.RegisteredParameter(
+            "preconditioner",
+            preconditioner.Preconditioner,
+            tip="Black magic for making the matrix more easily solvable."),
+        parameter.FloatParameter(
+            "tolerance", 1.e-13,
+            tip="Largest acceptable relative error in the matrix solution."),
+        parameter.IntParameter(
+            "max_iterations", 1000,
+            tip="Maximum number of iterations to perform.")],
+    tip="Generalized Mean Residuial method for iteratively solving non-symmetric matrices.",
+#    discussion=xmlmenudump.loadFile('DISCUSSIONS/engine/reg/gmres.xml')
 )
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
