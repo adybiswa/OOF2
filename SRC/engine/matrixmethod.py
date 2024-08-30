@@ -70,8 +70,6 @@ class ConjugateGradient(PreconditionedMatrixMethod):
         preconditioner.UnPreconditioner : cmatrixmethods.CG_Unpre,
         preconditioner.JacobiPreconditioner : cmatrixmethods.CG_Diag,
         preconditioner.ICPreconditioner : cmatrixmethods.CG_IC,
-        ## TODO: CG is not guaranteed to work with ILU or ILUT.  These
-        ## should be deprecated somehow.
         preconditioner.ILUPreconditioner : cmatrixmethods.CG_ILUT,
         preconditioner.ILUTPreconditioner : cmatrixmethods.CG_ILUT
     }
