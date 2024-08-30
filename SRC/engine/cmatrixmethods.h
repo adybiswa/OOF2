@@ -21,6 +21,7 @@
 #include "Eigen/SparseQR"
 #include "Eigen/OrderingMethods"
 #include "engine/sparsemat.h"
+#include "unsupported/Eigen/IterativeSolvers"
 
 // TODO: Progress bars are hacked into Eigen solvers.  Do they work?
 // Search for "OOF" in the Eigen source code to find the hacks.
@@ -36,6 +37,7 @@ enum Info {
 
 template<Precond P> class CG;
 template<Precond P> class BiCGStab;
+template<Precond P> class GMRES;
 class SimplicialLLT;
 class SimplicialLDLT;
 class SparseLU;
@@ -88,6 +90,22 @@ template<> struct IterSolverTrait<BiCGStab<Precond::IC>> {
   typedef Eigen::BiCGSTAB< ESMat, Eigen::IncompleteCholesky<double> > Type;
 };
 
+template <> struct IterSolverTrait<GMRES<Precond::Uncond>> {
+  typedef Eigen::GMRES<ESMat, Eigen::IdentityPreconditioner> Type;
+};
+
+template <> struct IterSolverTrait<GMRES<Precond::Diag>> {
+  typedef Eigen::GMRES<ESMat, Eigen::DiagonalPreconditioner<double>> Type;
+};
+
+template <> struct IterSolverTrait<GMRES<Precond::ILUT>> {
+  typedef Eigen::GMRES<ESMat, Eigen::IncompleteLUT<double>> Type;
+};
+
+template <> struct IterSolverTrait<GMRES<Precond::IC>> {
+  typedef Eigen::GMRES<ESMat, Eigen::IncompleteCholesky<double>> Type;
+};
+  
 // Direct solver traits
 
 template<typename Derived> struct DirectSolverTrait;
@@ -188,6 +206,15 @@ template class BiCGStab<Precond::Uncond>;
 template class BiCGStab<Precond::Diag>;
 template class BiCGStab<Precond::ILUT>;
 template class BiCGStab<Precond::IC>;
+
+template <Precond P>
+class GMRES : public IterativeSolver<GMRES<P>> {
+  friend class IterativeSolver<GMRES<P>>;
+};
+template class GMRES<Precond::Uncond>;
+template class GMRES<Precond::Diag>;
+template class GMRES<Precond::ILUT>;
+template class GMRES<Precond::IC>;
 
 // Direct solvers
 

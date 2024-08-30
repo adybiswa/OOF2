@@ -18,6 +18,9 @@
 # This file assumes that microstructures, images, and pixel group
 # menu items have all been tested and work.
 
+## TODO: Copy the reference file generation code from
+## skeleton_periodic_test.py.
+
 import unittest, os
 from . import memorycheck
 from .UTILS.file_utils import reference_file
@@ -863,29 +866,11 @@ def build_mod_args():
 
     # print("NOT RUNNING THE FULL SET OF SKELETON MODIFICATION TESTS")
     # skel_modify_args = {
-    #     "Snap Nodes" :
-    #     [("modbase", "snapnodes",
-    #       { "targets" : SnapAll(),
-    #         "criterion" : AverageEnergy(alpha=1.)
-    #        }
-    #       ),
-    #      ("modbase", "snapnodes_2",
-    #       {"targets" : SnapSelected(),
-    #        "criterion" : AverageEnergy(alpha=0.9)
-    #        },
-    #       "OOF.ElementGroup.Auto_Group(skeleton='skeltest:modtest')",
-    #       "OOF.ElementSelection.Select_Group(skeleton='skeltest:modtest', group='RGBColor(red=0.0,green=0.9882352941176471,blue=0.0)')"
-    #       ),
-    #      ("modbase", "snapnodes_3",
-    #       {"targets" : SnapSelectedNodes(),
-    #        "criterion" : AverageEnergy(alpha=0.9)
-    #        },
-    #       "OOF.NodeGroup.Auto_Group(skeleton='skeltest:modtest')",
-    #       "OOF.NodeSelection.Select_Group(skeleton='skeltest:modtest', group='RGBColor(red=0.0,green=0.9882352941176471,blue=0.0)')"
-    #       ),
-    #      ("modbase", "snapnodes_4",
-    #       {"targets" : SnapHeterogenous(threshold=0.9),
-    #        "criterion" : AverageEnergy(alpha=0.9)
+    #     "Relax" :
+    #     [("modbase", "relax",
+    #       { "alpha" : 0.5,
+    #         "gamma" : 0.5,
+    #         "iterations" : 1
     #        }
     #       )
     #      ],
@@ -923,6 +908,6 @@ special_set = [
 
 test_set = skel_set + special_set
 
-# test_set = [
-#     OOF_Skeleton("Modify"),
-# ]
+test_set = [
+    OOF_Skeleton("Modify"),
+]

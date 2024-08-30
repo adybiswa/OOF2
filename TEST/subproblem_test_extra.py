@@ -157,7 +157,7 @@ class OOF_Subproblem_Extra(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 asymmetric_solver=SparseQR(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1.e-13,
+                    preconditioner=ICPreconditioner(),tolerance=1.e-13,
                     max_iterations=1000)
                 )
             )

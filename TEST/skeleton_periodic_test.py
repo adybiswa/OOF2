@@ -163,17 +163,20 @@ class OOF_Skeleton(unittest.TestCase):
     ## loaded by setUp(), so it should be in a different TestCase
     ## subclass.
     @memorycheck.check("skeltest")
-    def doModify(self, registration, startfile, compfile, kwargs):
+    def doModify(self, registration, startfile, compfile, kwargs, commands):
         import os
         from ooflib.SWIG.common import crandom
+        # Loaded skeleton must be named "modtest".
         OOF.File.Load.Data(
             filename=reference_file("skeleton_data","periodic_mods", startfile))
-        sk0 = skeletoncontext.skeletonContexts["skeltest:modtest"].getObject()
         mod = registration(**kwargs)
         crandom.rndmseed(17)
+        if commands:
+            for cmd in commands:
+                exec(cmd)
         OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
-        sk0 = skeletoncontext.skeletonContexts["skeltest:modtest"].getObject()
-        self.assertTrue(sk0.sanity_check())
+        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
+        self.assertTrue(skelc.getObject().sanity_check())
         fname = reference_file("skeleton_data", "periodic_mods", compfile)
         if generate and not os.path.exists(fname):
             # Save the new Skeleton under a different name
@@ -224,8 +227,8 @@ class OOF_Skeleton(unittest.TestCase):
                       file=sys.stderr)
             else:
                 # Saved skeleton must be named "modtest".
-                for (startfile, compfile, kwargs) in mods:
-                    self.doModify(r, startfile, compfile, kwargs)
+                for (startfile, compfile, kwargs, *commands) in mods:
+                    self.doModify(r, startfile, compfile, kwargs, commands)
             
         
     @memorycheck.check("skeltest")

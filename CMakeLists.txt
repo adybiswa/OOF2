@@ -405,7 +405,11 @@ if(OOF2_DEV_INSTALL)
   install(
     DIRECTORY ${PROJECT_SOURCE_DIR}/SRC/Eigen
     DESTINATION include/oof2
-  )
+    )
+  install(
+    DIRECTORY ${PROJECT_SOURCE_DIR}/SRC/unsupported
+    DESTINATION include/oof2
+    )
   
   # Copy oofconfig.h and swigruntime.h from the build directory.
   install(

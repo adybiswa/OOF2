@@ -1060,7 +1060,7 @@ class OOF_PlaneFluxRHS(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1e-13,
+                    preconditioner=ICPreconditioner(),tolerance=1e-13,
                     max_iterations=1000)))
 
         OOF.Mesh.Solve(mesh='microstructure:skeleton:mesh',
@@ -1180,7 +1180,7 @@ class OOF_AnisoPlaneStress(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1.e-13,
+                    preconditioner=ICPreconditioner(),tolerance=1.e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
             mesh='microstructure:skeleton:mesh',

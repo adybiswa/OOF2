@@ -13,9 +13,10 @@ from ooflib.common.IO import parameter
 from ooflib.common.IO import xmlmenudump
 
 ## In the Eigen matrix method templates, the preconditioner isn't a
-## separate object from the solver.  These classes here are just
-## placeholders that are used in the PreconditionedMatrixMethod
-## classes in matrixmethod.py to choose the correct Eigen routine.
+## separate object from the solver.  The Preconditioner subclasses
+## here are just placeholders that are used in the
+## PreconditionedMatrixMethod classes in matrixmethod.py to choose the
+## correct Eigen routine.
 
 class Preconditioner(registeredclass.RegisteredClass):
     registry = []
@@ -26,25 +27,25 @@ class Preconditioner(registeredclass.RegisteredClass):
     def shortrepr(self):
         return self.__class__.__name__
 
-# The preconditioner name is used in matrixmethod.py to look up the
-# actual C++ method for each combination of solver and preconditioner.
-# I don't know why the class name isn't used instead.
-
 class UnPreconditioner(Preconditioner):
-    name = "Un"
+    pass
 
 class JacobiPreconditioner(Preconditioner):
-    name = "Diag"
+    pass
 
 class ILUTPreconditioner(Preconditioner):
-    name = "ILUT"
+    pass
 
-# ILU preconditioner actually points to ILUT preconditioner
 class ILUPreconditioner(Preconditioner):
-    name = "ILU"
+    # The ILU preconditioner is implemented by ILUT.  Eigen doesn't
+    # have a separate ILUT.  See the solver_maps in
+    # matrixmethod.py.  ILU is provided for backwards compatibility
+    # with old scripts.  It's registration is secret so that it
+    # doesn't appear in the GUI.
+    pass
 
 class ICPreconditioner(Preconditioner):
-    name = "IC"
+    pass
 
 registeredclass.Registration(
     "Null",
@@ -93,13 +94,14 @@ registeredclass.Registration(
 )
 
 registeredclass.Registration(
-    "ILU",
+    "Incomplete LU",
     Preconditioner,
     ILUPreconditioner,
     ordering=101,
     params=[],
     secret=True,
-    tip="ILU is not supported. It points to IncompleteLUT instead.") 
+    tip="ILU is not supported. It points to IncompleteLUT instead."
+) 
 
 registeredclass.Registration(
     "Incomplete Cholesky",
@@ -116,3 +118,6 @@ registeredclass.Registration(
     role="external"/>.
     </para>"""
 ) 
+
+class PreconditionerParameter(parameter.RegisteredParameter):
+    pass

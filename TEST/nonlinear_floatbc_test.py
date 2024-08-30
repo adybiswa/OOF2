@@ -219,7 +219,7 @@ class OOF_SimpleFloat(unittest.TestCase):
                         singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -243,7 +243,7 @@ class OOF_SimpleFloat(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -263,7 +263,7 @@ class OOF_SimpleFloat(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -440,7 +440,7 @@ class OOF_FloatBC1(unittest.TestCase):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
                     preconditioner=ILUPreconditioner(),
@@ -464,7 +464,7 @@ class OOF_FloatBC1(unittest.TestCase):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
                     preconditioner=ILUPreconditioner(),
@@ -491,7 +491,7 @@ class OOF_FloatBC1(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
                     preconditioner=ILUPreconditioner(),
@@ -518,7 +518,7 @@ class OOF_FloatBC1(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
                     preconditioner=ILUPreconditioner(),

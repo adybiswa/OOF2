@@ -26,6 +26,10 @@ typedef BiCGStab<Precond::Uncond> BiCGStab_Unpre;
 typedef BiCGStab<Precond::Diag> BiCGStab_Diag;
 typedef BiCGStab<Precond::ILUT> BiCGStab_ILUT;
 typedef BiCGStab<Precond::IC> BiCGStab_IC;
+typedef GMRES<Precond::Uncond> GMRES_Unpre;
+typedef GMRES<Precond::Diag> GMRES_Diag;
+typedef GMRES<Precond::ILUT> GMRES_ILUT;
+typedef GMRES<Precond::IC> GMRES_IC;
 %}
 
 enum Info {
@@ -130,6 +134,58 @@ class BiCGStab_IC {
 public:
   BiCGStab_IC();
   ~BiCGStab_IC();
+  int solve(const SparseMat& m, const DoubleVec& rhs, DoubleVec& x);
+  void set_max_iterations(int iters);
+  int max_iterations() const;
+  void set_tolerance(double tol);
+  double tolerance() const;
+  int iterations() const;
+  double error() const;
+};
+
+class GMRES_Unpre{
+public:
+  GMRES_Unpre();
+  ~GMRES_Unpre();
+  int solve(const SparseMat& m, const DoubleVec& rhs, DoubleVec& x);
+  void set_max_iterations(int iters);
+  int max_iterations() const;
+  void set_tolerance(double tol);
+  double tolerance() const;
+  int iterations() const;
+  double error() const;
+};
+
+class GMRES_Diag {
+public:
+  GMRES_Diag();
+  ~GMRES_Diag();
+  int solve(const SparseMat& m, const DoubleVec& rhs, DoubleVec& x);
+  void set_max_iterations(int iters);
+  int max_iterations() const;
+  void set_tolerance(double tol);
+  double tolerance() const;
+  int iterations() const;
+  double error() const;
+};
+
+class GMRES_ILUT {
+public:
+  GMRES_ILUT();
+  ~GMRES_ILUT();
+  int solve(const SparseMat& m, const DoubleVec& rhs, DoubleVec& x);
+  void set_max_iterations(int iters);
+  int max_iterations() const;
+  void set_tolerance(double tol);
+  double tolerance() const;
+  int iterations() const;
+  double error() const;
+};
+
+class GMRES_IC {
+public:
+  GMRES_IC();
+  ~GMRES_IC();
   int solve(const SparseMat& m, const DoubleVec& rhs, DoubleVec& x);
   void set_max_iterations(int iters);
   int max_iterations() const;

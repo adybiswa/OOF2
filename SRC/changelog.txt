@@ -29,6 +29,11 @@ OOF2 2.3.4
 * The time derivatives of fields can now be plotted and used in other
   outputs.
 
+* Added the GMRES matrix solver.  It had been removed when we started
+  using the Eigen linear algebra package.  This version is provided
+  by the "unsupported" code distributed with Eigen.
+
+
 OOF2 2.3.3
 
 * Disabled selection of interface segments since interface properties
