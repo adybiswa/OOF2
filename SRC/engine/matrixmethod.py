@@ -54,31 +54,6 @@ class AsymmetricMatrixMethodParam(parameter.RegisteredParameter):
         super(AsymmetricMatrixMethodParam, self).__init__(
             name, MatrixMethod, value=value, default=default, tip=tip)
 
-solver_map = {}
-solver_map["CG"] = {}
-solver_map["CG"]["Un"] = cmatrixmethods.CG_Unpre
-solver_map["CG"]["Diag"] = cmatrixmethods.CG_Diag
-solver_map["CG"]["IC"] = cmatrixmethods.CG_IC
-
-# TODO: CG is not guaranteed to work with the ILU
-# preconditioner. Delete the next two lines and in the GUI only list
-# the available proconditioners for each matrix method.
-solver_map["CG"]["ILUT"] = cmatrixmethods.CG_ILUT
-solver_map["CG"]["ILU"] = cmatrixmethods.CG_ILUT
-
-solver_map["BiCGStab"] = {}
-solver_map["BiCGStab"]["Un"] = cmatrixmethods.BiCGStab_Unpre
-solver_map["BiCGStab"]["Diag"] = cmatrixmethods.BiCGStab_Diag
-solver_map["BiCGStab"]["ILUT"] = cmatrixmethods.BiCGStab_ILUT
-solver_map["BiCGStab"]["ILU"] = cmatrixmethods.BiCGStab_ILUT
-solver_map["BiCGStab"]["IC"] = cmatrixmethods.BiCGStab_IC
-solver_map["GMRES"] = {}
-solver_map["GMRES"]["Un"] = cmatrixmethods.GMRES_Unpre
-solver_map["GMRES"]["Diag"] = cmatrixmethods.GMRES_Diag
-solver_map["GMRES"]["ILUT"] = cmatrixmethods.GMRES_ILUT
-solver_map["GMRES"]["ILU"] = cmatrixmethods.GMRES_ILUT
-solver_map["GMRES"]["IC"] = cmatrixmethods.GMRES_IC
-
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 _check_symmetry = False #debug.debug()
@@ -91,11 +66,20 @@ _check_symmetry = False #debug.debug()
 ## plasticity?)
 
 class ConjugateGradient(PreconditionedMatrixMethod):
+    solver_map = {
+        preconditioner.UnPreconditioner : cmatrixmethods.CG_Unpre,
+        preconditioner.JacobiPreconditioner : cmatrixmethods.CG_Diag,
+        preconditioner.ICPreconditioner : cmatrixmethods.CG_IC,
+        ## TODO: CG is not guaranteed to work with ILU or ILUT.  These
+        ## should be deprecated somehow.
+        preconditioner.ILUPreconditioner : cmatrixmethods.CG_ILUT,
+        preconditioner.ILUTPreconditioner : cmatrixmethods.CG_ILUT
+    }
     def __init__(self, preconditioner, tolerance, max_iterations):
         self.preconditioner = preconditioner
         self.tolerance = tolerance
         self.max_iterations = max_iterations
-        self.solver = solver_map["CG"][preconditioner.name]()
+        self.solver = self.solver_map[type(preconditioner)]()
         self.solver.set_max_iterations(max_iterations)
         self.solver.set_tolerance(tolerance)
     def solveMatrix(self, matrix, rhs, solution):
@@ -123,7 +107,7 @@ registeredclass.Registration(
     ordering=1,
     symmetricOnly=True,
     params=[
-        parameter.RegisteredParameter(
+        preconditioner.PreconditionerParameter(
             "preconditioner",
             preconditioner.Preconditioner,
             tip="Black magic for making the matrix more easily solvable."),
@@ -153,11 +137,18 @@ mainmenu.debugmenu.addItem(
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 class StabilizedBiConjugateGradient(PreconditionedMatrixMethod):
+    solver_map = {
+        preconditioner.UnPreconditioner : cmatrixmethods.BiCGStab_Unpre,
+        preconditioner.JacobiPreconditioner : cmatrixmethods.BiCGStab_Diag,
+        preconditioner.ILUTPreconditioner : cmatrixmethods.BiCGStab_ILUT,
+        preconditioner.ILUPreconditioner : cmatrixmethods.BiCGStab_ILUT,
+        preconditioner.ICPreconditioner : cmatrixmethods.BiCGStab_IC
+    }
     def __init__(self, preconditioner, tolerance, max_iterations):
         self.preconditioner = preconditioner
         self.tolerance = tolerance
         self.max_iterations = max_iterations
-        self.solver = solver_map["BiCGStab"][preconditioner.name]()
+        self.solver = self.solver_map[type(preconditioner)]()
         self.solver.set_max_iterations(max_iterations)
         self.solver.set_tolerance(tolerance)
     def solveMatrix(self, matrix, rhs, solution):
@@ -175,7 +166,7 @@ registeredclass.Registration(
     ordering=2.1,
     symmetricOnly=False,
     params=[
-        parameter.RegisteredParameter(
+        preconditioner.PreconditionerParameter(
             "preconditioner",
             preconditioner.Preconditioner,
             tip="Black magic for making the matrix more easily solvable."),
@@ -192,11 +183,18 @@ registeredclass.Registration(
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 class GMRES(PreconditionedMatrixMethod):
+    solver_map = {
+        preconditioner.UnPreconditioner : cmatrixmethods.GMRES_Unpre,
+        preconditioner.JacobiPreconditioner : cmatrixmethods.GMRES_Diag,
+        preconditioner.ILUTPreconditioner : cmatrixmethods.GMRES_ILUT,
+        preconditioner.ILUPreconditioner : cmatrixmethods.GMRES_ILUT,
+        preconditioner.ICPreconditioner : cmatrixmethods.GMRES_IC
+    }
     def __init__(self, preconditioner, tolerance, max_iterations):
         self.preconditioner = preconditioner
         self.tolerance = tolerance
         self.max_iterations = max_iterations
-        self.solver = solver_map["GMRES"][preconditioner.name]()
+        self.solver = self.solver_map[type(preconditioner)]()
         self.solver.set_max_iterations(max_iterations)
         self.solver.set_tolerance(tolerance)
     def solveMatrix(self, matrix, rhs, solution):
@@ -214,7 +212,7 @@ registeredclass.Registration(
     ordering=2.1,
     symmetricOnly=False,
     params=[
-        parameter.RegisteredParameter(
+        preconditioner.PreconditionerParameter(
             "preconditioner",
             preconditioner.Preconditioner,
             tip="Black magic for making the matrix more easily solvable."),
@@ -245,7 +243,7 @@ registeredclass.Registration(
     symmetricOnly=False,
     secret=True,
     params=[
-        parameter.RegisteredParameter(
+        preconditioner.PreconditionerParameter(
             "preconditioner",
             preconditioner.Preconditioner,
             tip="Black magic for making the matrix more easily solvable."),
@@ -443,11 +441,10 @@ class BasicIterative(BasicMatrixMethod):
             existingSolver.tolerance == self.tolerance and
             existingSolver.max_iterations == self.max_iterations and
             isinstance(existingSolver.preconditioner,
-                       ## TODO: Should the preconditioner be IC or ILUT?
-                       preconditioner.ILUTPreconditioner)):
+                       preconditioner.ICPreconditioner)):
             return existingSolver
         return ConjugateGradient(
-            preconditioner=preconditioner.ILUTPreconditioner(),
+            preconditioner=preconditioner.ICPreconditioner(),
             tolerance=self.tolerance,
             max_iterations=self.max_iterations)
     def resolve_asymmetric(self, subproblemcontext, existingSolver):

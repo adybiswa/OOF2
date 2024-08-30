@@ -111,7 +111,7 @@ class R3TensorRotationBug(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=SparseLU()))

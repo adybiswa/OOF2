@@ -64,19 +64,13 @@ skel_modify_args = {}
 def build_mod_args():
     global skel_modify_args
     skel_modify_args = {
-        "Refine" :
-        [
-            ("modbase_groups", "refine_9",
-             dict(targets=CheckSegmentsInGroup(group='#00fc00'),
-               criterion=Unconditionally(),
-               divider=Bisection(),
-               rules='Quick',alpha=0.3)),
-         ("modbase_groups", "refine_9L",
-          dict(targets=CheckSegmentsInGroup(group='#00fc00'),
-               criterion=Unconditionally(),
-               divider=Bisection(),
-               rules='Large',alpha=0.3)),
-
+        "Relax" :
+        [("modbase", "relax",
+          { "alpha" : 0.5,
+            "gamma" : 0.5,
+            "iterations" : 1
+           }
+          )
          ],
     }
 
@@ -93,6 +87,7 @@ if __name__=="__main__":
     # If directly run, then start oof, and run the local tests, then quit.
     import sys
     try:
+        sys.path.append("/Users/langer/lib/python3.11/site-packages")
         import oof2
         sys.path.append(os.path.dirname(oof2.__file__))
         from ooflib.common import oof

@@ -28,7 +28,7 @@ Mesh.New(name='mesh', masterelems=['T6_6', 'Q8_8'], skeleton='reference:skeleton
 Subproblem.New(name='stripe', subproblem=PixelGroupSubProblem(group='stripe'), mesh='reference:skeleton:mesh')
 Subproblem.Fields(subproblem='reference:skeleton:mesh:stripe', defined=['Temperature'], active=['Temperature'], inplane=[])
 Subproblem.Equations(subproblem='reference:skeleton:mesh:stripe', equations=['Heat_Eqn', 'Plane_Heat_Flux'])
-Subproblem.Solver(subproblem='reference:skeleton:mesh:stripe', solver_mode=AdvancedSolverMode(time_stepper=StaticDriver(),nonlinear_solver=NoNonlinearSolver(),symmetric_solver=ConjugateGradient(preconditioner=ILUPreconditioner(),tolerance=1e-13,max_iterations=1000),asymmetric_solver=SparseQR()))
+Subproblem.Solver(subproblem='reference:skeleton:mesh:stripe', solver_mode=AdvancedSolverMode(time_stepper=StaticDriver(),nonlinear_solver=NoNonlinearSolver(),symmetric_solver=ConjugateGradient(preconditioner=ICPreconditioner(),tolerance=1e-13,max_iterations=1000),asymmetric_solver=SparseQR()))
 Subproblem.New(name='edges', subproblem=PixelGroupSubProblem(group='edges'), mesh='reference:skeleton:mesh')
 Mesh.Boundary_Condition(mesh='reference:skeleton:mesh', bcname='bc', bc=DirichletBC(field=Temperature,field_component='',equation=Heat_Eqn,eqn_component='',profile=ConstantProfile(value=0.0),boundary='bottom'))
 Mesh.Boundary_Condition(mesh='reference:skeleton:mesh', bcname='bc<2>', bc=ForceBC(equation=Heat_Eqn,eqn_component='',profile=ContinuumProfileXT(function='1'),boundary='midtop'))

@@ -51,19 +51,19 @@ class IterativeMethods(unittest.TestCase):
         solver.solveMatrix(self.matrix, self.rhs, solution)
         self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
     
-    def CG_ILU(self):
-        solution = doublevec.DoubleVec(0)
-        pc = preconditioner.ILUPreconditioner()
-        solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
-        solver.solveMatrix(self.matrix, self.rhs, solution)
-        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+    # def CG_ILU(self):
+    #     solution = doublevec.DoubleVec(0)
+    #     pc = preconditioner.ILUPreconditioner()
+    #     solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
+    #     solver.solveMatrix(self.matrix, self.rhs, solution)
+    #     self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
 
-    def CG_ILUT(self):
-        solution = doublevec.DoubleVec(0)
-        pc = preconditioner.ILUTPreconditioner()
-        solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
-        solver.solveMatrix(self.matrix, self.rhs, solution)
-        self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
+    # def CG_ILUT(self):
+    #     solution = doublevec.DoubleVec(0)
+    #     pc = preconditioner.ILUTPreconditioner()
+    #     solver = matrixmethod.ConjugateGradient(pc, self.tolerance, self.max_iterations)
+    #     solver.solveMatrix(self.matrix, self.rhs, solution)
+    #     self.assertAlmostEqual(self.ref.norm(), solution.norm(), 9)
     
     def CG_Jacobi(self):
         solution = doublevec.DoubleVec(0)
@@ -350,8 +350,8 @@ class BCTest(unittest.TestCase):
 
 iter_set = [
     IterativeMethods("CG"),
-    IterativeMethods("CG_ILU"),
-    IterativeMethods("CG_ILUT"),
+    # IterativeMethods("CG_ILU"),
+    # IterativeMethods("CG_ILUT"),
     IterativeMethods("CG_Jacobi"),
     IterativeMethods("CG_IC"),
     IterativeMethods("GMRES"),

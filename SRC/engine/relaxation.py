@@ -289,7 +289,7 @@ class Relax(skeletonmodifier.SkeletonModifier):
             time_stepper=staticstep.StaticDriver(),
             nonlinear_solver=nonlinearsolver.NoNonlinearSolver(),
             symmetric_solver=matrixmethod.ConjugateGradient(
-                preconditioner.ILUPreconditioner(),
+                preconditioner.ICPreconditioner(),
                 1.e-5,          # tolerance
                 1000            # max_iterations
                 ),

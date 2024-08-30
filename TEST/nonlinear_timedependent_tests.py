@@ -210,7 +210,7 @@ class NonlinearTimedependentTest(unittest.TestCase):
                     stepper=test_stepper),
                nonlinear_solver=test_solver,
                symmetric_solver=ConjugateGradient(
-                   preconditioner=ILUPreconditioner(),
+                   preconditioner=ICPreconditioner(),
                    tolerance=1e-13,
                    max_iterations=1000),
                asymmetric_solver=BiConjugateGradient(
@@ -354,7 +354,7 @@ class NonlinearTimedependentTest(unittest.TestCase):
                     stepper = test_stepper ),
                nonlinear_solver = test_solver,
                symmetric_solver=ConjugateGradient(
-                   preconditioner=ILUPreconditioner(),
+                   preconditioner=ICPreconditioner(),
                    tolerance=1e-13,
                    max_iterations=1000),
                asymmetric_solver=BiConjugateGradient(

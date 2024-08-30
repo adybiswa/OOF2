@@ -132,7 +132,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     stepper=TwoStep(singlestep=RK4())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -166,7 +166,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -205,7 +205,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -239,7 +239,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -276,7 +276,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -312,7 +312,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -348,7 +348,7 @@ class OOF_LinearDiffusion(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(
@@ -476,7 +476,7 @@ class OOF_NLPlaneStress(unittest.TestCase):
                     absolute_tolerance=1.e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -664,7 +664,7 @@ class OOF_NLPlaneStress2(unittest.TestCase):
                         singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -689,7 +689,7 @@ class OOF_NLPlaneStress2(unittest.TestCase):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -717,7 +717,7 @@ class OOF_NLPlaneStress2(unittest.TestCase):
                     absolute_tolerance=1e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -745,7 +745,7 @@ class OOF_NLPlaneStress2(unittest.TestCase):
                     absolute_tolerance=1e-13,
                     maximum_iterations=200),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(

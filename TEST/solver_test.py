@@ -93,7 +93,7 @@ class OOF_StaticIsoElastic(SaveableMeshTest):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver= ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1e-13,
+                    preconditioner=ICPreconditioner(),tolerance=1e-13,
                     max_iterations=1000)))
 
         OOF.Mesh.Solve(mesh='solve_test:skeleton:mesh', endtime=0.0)
@@ -785,7 +785,7 @@ class OOF_1x1ElasticDynamic(SaveableMeshTest):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000)
                 )
             )
@@ -829,7 +829,7 @@ class OOF_1x1ElasticDynamic(SaveableMeshTest):
                     stepper=TwoStep(singlestep=SS22(theta1=0.5,theta2=0.5))
                     ),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,max_iterations=1000)
                 )
             )
@@ -1077,7 +1077,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1124,7 +1124,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1155,7 +1155,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1189,7 +1189,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=BackwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1219,7 +1219,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=RK4())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1249,7 +1249,7 @@ class OOF_ThermalDiffusionTimeSteppers(SaveableMeshTest):
                     stepper=TwoStep(singlestep=RK2())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1508,7 +1508,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1555,7 +1555,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1587,7 +1587,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1621,7 +1621,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=BackwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1651,7 +1651,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=RK4())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1681,7 +1681,7 @@ class OOF_ThermalDiffusionTSPlaneFlux(SaveableMeshTest):
                     stepper=TwoStep(singlestep=RK2())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -1790,7 +1790,8 @@ class OOF_ElasticPlaneStressPlaneStrainExact(SaveableMeshTest):
                 time_stepper=StaticDriver(),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1e-13,
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -1830,7 +1831,7 @@ class OOF_ElasticPlaneStressPlaneStrainExact(SaveableMeshTest):
                 time_stepper=StaticDriver(),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),tolerance=1e-13,
+                    preconditioner=ICPreconditioner(),tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -1945,7 +1946,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -1981,7 +1982,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -2019,7 +2020,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -2069,7 +2070,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2111,7 +2112,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2153,7 +2154,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=RK4())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2197,7 +2198,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=RK2())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2242,7 +2243,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=BackwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2288,7 +2289,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=BackwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2332,7 +2333,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                     stepper=TwoStep(singlestep=RK4())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2377,7 +2378,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                     stepper=TwoStep(singlestep=RK2())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2421,7 +2422,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=ForwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1.e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2467,7 +2468,7 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=ForwardEuler())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2536,7 +2537,7 @@ class OOF_AnisoElasticDynamic(OOF_ElasticTimeSteppers):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -2701,7 +2702,7 @@ class OOF_StaticAndDynamic(OOF_ElasticTimeSteppers):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -2819,7 +2820,7 @@ class OOF_ThermalElasticTimeSteppers(OOF_ElasticTimeSteppers):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -2875,7 +2876,7 @@ class OOF_ThermalElasticTimeSteppers(OOF_ElasticTimeSteppers):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
                 )
@@ -2895,7 +2896,7 @@ class OOF_ThermalElasticTimeSteppers(OOF_ElasticTimeSteppers):
                     stepper=TwoStep(singlestep=CrankNicolson())),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -3170,7 +3171,7 @@ class ThermalExpansionTest(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ILUTPreconditioner(),
+                    preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000),
                 asymmetric_solver=BiConjugateGradient(
@@ -3273,8 +3274,10 @@ test_set = (static_set +
 
 ## Uncomment this to run just a single test when debugging.
 # test_set = [
-#     OOF_StaticAndDynamic("SS22PlaneStrain")
+#     OOF_StaticAndDynamic("SS22PlaneStrain"),
 # ]
 # for test in test_set:
-#     test.shortening = 1
-#     test.suffix = ""
+#     test.shortening = .1
+#     test.suffix = "-short"
+#     # test.shortening = 1
+#     # test.suffix = ""
