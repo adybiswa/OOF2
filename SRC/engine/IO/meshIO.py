@@ -664,8 +664,6 @@ meshmenu.addItem(OOFMenuItem(
         </para>"""
         ))
 
-# TODO: Store and retrieve time derivative fields?
-
 meshmenu.addItem(OOFMenuItem(
     'Initialize_Field',
     callback=ooflib.engine.IO.meshmenu.initField,
