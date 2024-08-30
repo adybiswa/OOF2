@@ -38,10 +38,10 @@ class ILUTPreconditioner(Preconditioner):
 
 class ILUPreconditioner(Preconditioner):
     # The ILU preconditioner is implemented by ILUT.  Eigen doesn't
-    # have a separate ILU.  See the solver_maps in matrixmethod.py.
-    # ILU is provided for backwards compatibility with old scripts.
-    # It's registration is secret so that it doesn't appear in the
-    # GUI.
+    # have a separate ILUT.  See the solver_maps in
+    # matrixmethod.py.  ILU is provided for backwards compatibility
+    # with old scripts.  It's registration is secret so that it
+    # doesn't appear in the GUI.
     pass
 
 class ICPreconditioner(Preconditioner):
@@ -94,7 +94,7 @@ registeredclass.Registration(
 )
 
 registeredclass.Registration(
-    "ILU",
+    "Incomplete LU",
     Preconditioner,
     ILUPreconditioner,
     ordering=101,
