@@ -175,8 +175,8 @@ class OOF_Skeleton(unittest.TestCase):
             for cmd in commands:
                 exec(cmd)
         OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
-        sk0 = skeletoncontext.skeletonContexts["skeltest:modtest"].getObject()
-        self.assertTrue(sk0.sanity_check())
+        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
+        self.assertTrue(skelc.getObject().sanity_check())
         fname = reference_file("skeleton_data", "periodic_mods", compfile)
         if generate and not os.path.exists(fname):
             # Save the new Skeleton under a different name

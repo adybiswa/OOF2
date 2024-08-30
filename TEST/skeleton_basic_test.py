@@ -18,6 +18,9 @@
 # This file assumes that microstructures, images, and pixel group
 # menu items have all been tested and work.
 
+## TODO: Copy the reference file generation code from
+## skeleton_periodic_test.py.
+
 import unittest, os
 from . import memorycheck
 from .UTILS.file_utils import reference_file
