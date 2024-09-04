@@ -36,7 +36,11 @@ class OOF_AMR(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
-                    tolerance=1e-13, max_iterations=1000)))
+                    tolerance=1e-13, max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000)))
         OOF.Mesh.Solve(
             mesh='el_shape.png:skeleton:mesh', endtime=0.0)
 
@@ -112,7 +116,11 @@ class OOF_AMR(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
-                    tolerance=1.e-13, max_iterations=1000)))
+                    tolerance=1.e-13, max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000)))
         OOF.Mesh.Solve(
             mesh='el_shape.png:skeleton:mesh', endtime=0.0)
         OOF.Subproblem.Copy_Field_State(

@@ -182,7 +182,11 @@ class OOF_SimpleInterfaceTest(unittest.TestCase):
             time_stepping=StaticDriver(),
             matrix_method=BiConjugateGradient(
                 preconditioner=ILUPreconditioner(),
-                tolerance=1e-13,max_iterations=1000))
+                tolerance=1e-13,max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000))
         
         OOF.Mesh.Solve(mesh='cyallow.png:skeleton:mesh', endtime=0.0,
                        stepsize=0)

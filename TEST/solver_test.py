@@ -94,6 +94,10 @@ class OOF_StaticIsoElastic(SaveableMeshTest):
                 time_stepper=StaticDriver(),
                 symmetric_solver= ConjugateGradient(
                     preconditioner=ICPreconditioner(),tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
 
         OOF.Mesh.Solve(mesh='solve_test:skeleton:mesh', endtime=0.0)
@@ -786,7 +790,11 @@ class OOF_1x1ElasticDynamic(SaveableMeshTest):
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
-                    tolerance=1e-13,max_iterations=1000)
+                    tolerance=1e-13,max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000)
                 )
             )
         OOF.Mesh.Solve(
@@ -830,7 +838,11 @@ class OOF_1x1ElasticDynamic(SaveableMeshTest):
                     ),
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
-                    tolerance=1e-13,max_iterations=1000)
+                    tolerance=1e-13,max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000)
                 )
             )
         OOF.Mesh.Set_Field_Initializer(
@@ -1792,6 +1804,10 @@ class OOF_ElasticPlaneStressPlaneStrainExact(SaveableMeshTest):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -1832,6 +1848,10 @@ class OOF_ElasticPlaneStressPlaneStrainExact(SaveableMeshTest):
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -1948,6 +1968,10 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -1982,6 +2006,10 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
@@ -2020,6 +2048,10 @@ class OOF_ElasticTimeSteppers(OOF_ElasticPlaneStressPlaneStrainExact):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)
@@ -2539,6 +2571,10 @@ class OOF_AnisoElasticDynamic(OOF_ElasticTimeSteppers):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -2822,6 +2858,10 @@ class OOF_ThermalElasticTimeSteppers(OOF_ElasticTimeSteppers):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)
                 )
             )
@@ -2876,6 +2916,10 @@ class OOF_ThermalElasticTimeSteppers(OOF_ElasticTimeSteppers):
                         singlestep=SS22(theta1=0.5,theta2=0.5))),
                 nonlinear_solver=NoNonlinearSolver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)

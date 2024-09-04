@@ -157,10 +157,9 @@ class OOF_Subproblem_Extra(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 asymmetric_solver=SparseQR(),
                 symmetric_solver=ConjugateGradient(
-                    preconditioner=ICPreconditioner(),tolerance=1.e-13,
-                    max_iterations=1000)
-                )
-            )
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1.e-13,
+                    max_iterations=1000)))
         OOF.Mesh.Solve(mesh='microstructure:skeleton:mesh',
                        endtime=0.0)
 

@@ -646,6 +646,10 @@ class OOF_Material_Symmetry(unittest.TestCase):
                 time_stepper=StaticDriver(),
                 symmetric_solver= ConjugateGradient(
                     preconditioner=ICPreconditioner(),tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         
     def tearDown(self):

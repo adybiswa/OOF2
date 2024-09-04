@@ -160,6 +160,10 @@ class SubProblemContext(whoville.Who):
         # that the subproblem can accumulate statistics on the
         # solution process.
         if asympredicate(*args, **kwargs):
+            # Old scripts might not specify the asymmetric solver in
+            # AdvancedSolverMode.  Not specifying it isn't an error if
+            # the solver isn't used.
+            assert self.asymmetric_solver is not None
             return MatrixSolverWrapper(self, self.asymmetric_solver)
         return MatrixSolverWrapper(self, self.symmetric_solver)
 

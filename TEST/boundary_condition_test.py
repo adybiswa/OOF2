@@ -45,6 +45,10 @@ class OOF_BCTest(unittest.TestCase):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(mesh='bc_test:skeleton:mesh',
                        endtime=0.0)
@@ -77,6 +81,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -120,6 +128,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -166,6 +178,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -225,6 +241,10 @@ class OOF_BCTest(unittest.TestCase):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(mesh='bc_test:skeleton:mesh',
                        endtime=0.0)
@@ -257,6 +277,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -342,6 +366,10 @@ class OOF_BCTest(unittest.TestCase):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(mesh='bc_test:skeleton:mesh',
                        endtime=0.0)
@@ -377,6 +405,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -426,6 +458,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -485,6 +521,10 @@ class OOF_BCTest(unittest.TestCase):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         OOF.Mesh.Solve(mesh='bc_test:skeleton:mesh',
                        endtime=0.0)
@@ -521,6 +561,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
@@ -565,6 +609,10 @@ class OOF_BCTest(unittest.TestCase):
                 symmetric_solver=ConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
                     max_iterations=1000)))
         from ooflib.SWIG.common import ooferror
         self.assertRaises(ooferror.PyErrWarning,
@@ -599,6 +647,10 @@ class OOF_BCTest(unittest.TestCase):
                 nonlinear_solver=NoNonlinearSolver(),
                 time_stepper=StaticDriver(),
                 symmetric_solver=ConjugateGradient(
+                    preconditioner=ICPreconditioner(),
+                    tolerance=1e-13,
+                    max_iterations=1000),
+                asymmetric_solver=StabilizedBiConjugateGradient(
                     preconditioner=ICPreconditioner(),
                     tolerance=1e-13,
                     max_iterations=1000)))
