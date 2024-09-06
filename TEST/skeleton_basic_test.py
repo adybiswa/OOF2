@@ -53,6 +53,14 @@ class OOF_Skeleton(unittest.TestCase):
         from ooflib.SWIG.engine import cskeleton
         global cmicrostructure
         from ooflib.SWIG.common import cmicrostructure
+        global parameter
+        from ooflib.common.IO import parameter
+        global crandom
+        from ooflib.SWIG.common import crandom
+        global os
+        import os
+        global filecmp
+        import filecmp
         OOF.Microstructure.Create_From_ImageFile(
             filename=reference_file("ms_data","small.ppm"),
             microstructure_name="skeltest",
@@ -62,7 +70,6 @@ class OOF_Skeleton(unittest.TestCase):
     @memorycheck.check("skeltest")
     def New(self):
         self.assertEqual(skeletoncontext.skeletonContexts.nActual(), 0)
-        from ooflib.common.IO import parameter
         self.assertRaises(
             parameter.ParameterMismatch,
             OOF.Skeleton.New,
@@ -170,7 +177,6 @@ class OOF_Skeleton(unittest.TestCase):
 
     @memorycheck.check("skeltest")
     def Save(self):
-        import os, filecmp
         OOF.Skeleton.New(
             name="savetest", microstructure="skeltest",
             x_elements=8, y_elements=8,
@@ -225,84 +231,9 @@ class OOF_Skeleton(unittest.TestCase):
                         h-h0, file=sys.stderr)
                     self.assertAlmostEqual(h, h0, 10)
                 OOF.Skeleton.Delete(skeleton="skeltest:htest")
-    #     self.testHomogeneityUniform(
-    #         TriSkeleton(arrangement='moderate',
-    #                     top_bottom_periodicity=False,
-    #                     left_right_periodicity=False),
-    #         skelsizes, ntiles)
-
-    # def testHomogeneityUniform(self, skelgeom, skelsizes, ntiles):
-    #     for skelsize in skelsizes:
-    #         OOF.Skeleton.New(
-    #             name="htest", microstructure="skeltest",
-    #             x_elements=skelsize, y_elements=skelsize,
-    #             skeleton_geometry=skelgeom)
-    #         h0 = getHomogIndex("skeltest", "htest", bins=1)
-    #         print >> sys.stderr, "Homogeneity Check: skelsize=", skelsize
-    #         print >> sys.stderr, "  bins=0, h=", h0
-    #         for bins in ntiles:
-    #             h = getHomogIndex("skeltest", "htest", bins=bins)
-    #             print >> sys.stderr, "  bins=", bins, "h=", h, "delta=", h-h0
-    #             self.assertAlmostEqual(h, h0, 10);
-    #         OOF.Skeleton.Delete(skeleton="skeltest:htest")
                     
-
-    ## TODO: doModify loads its own Skeleton and doesn't use the one
-    ## loaded by setUp(), so it should be in a different TestCase
-    ## subclass.
-    @memorycheck.check("skeltest", "skelcomp")
-    def doModify(self, registration, startfile, compfile, kwargs, commands):
-        import os
-        from ooflib.SWIG.common import crandom
-        # Loaded skeleton must be named "modtest".
-        OOF.File.Load.Data(filename=reference_file("skeleton_data", startfile))
-        mod = registration(**kwargs)
-        crandom.rndmseed(17)
-        if commands:
-            for cmd in commands:
-                exec(cmd)
-        OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
-        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
-        self.assertTrue(skelc.getObject().sanity_check())
-        # Saving and reloading the Skeleton guarantees that node
-        # indices match up with the reference skeleton.  Nodes are
-        # re-indexed when a skeleton is saved.
-        OOF.File.Save.Skeleton(
-            filename="skeleton_mod_test",
-            mode="w", format="ascii",
-            skeleton="skeltest:modtest")
-        OOF.Skeleton.Delete(skeleton="skeltest:modtest")
-        OOF.File.Load.Data(filename="skeleton_mod_test")
-        # Saved skeleton is named "skelcomp:reference".
-        OOF.File.Load.Data(
-            filename=reference_file("skeleton_data",
-                                  compfile))
-        sk1 = skeletoncontext.skeletonContexts[
-            "skeltest:modtest"].getObject()
-        sk2 = skeletoncontext.skeletonContexts[
-            "skelcomp:reference"].getObject()
-        # Tolerance is 1.0e-13, 100x double-precision noise.
-        self.assertEqual(sk1.compare(sk2, 1.0e-13), 0)
-        os.remove("skeleton_mod_test")
-
-    # This is a modify pass which may be considered preliminary -- the
-    # only possible target is "AllNodes", because we do not yet know
-    # that we can make selections, or pin nodes, or anything.
-    def Modify(self):
-        from ooflib.engine import skeletonmodifier
-        for r in skeletonmodifier.SkeletonModifier.registry:
-            try:
-                mods = skel_modify_args[r.name()]
-            except KeyError:
-                print("No data for skeleton modifier %s." % r.name(), file=sys.stderr)
-            else:
-                print("Testing", r.name(), file=sys.stderr)
-                for (startfile, compfile, kwargs, *commands) in mods:
-                    self.doModify(r, startfile, compfile, kwargs, commands)
-
     @memorycheck.check("skeltest")
     def Undo(self):
-        from ooflib.engine import skeletoncontext
         OOF.Skeleton.New(
             name="undotest", microstructure="skeltest",
             x_elements=8, y_elements=8,
@@ -327,7 +258,6 @@ class OOF_Skeleton(unittest.TestCase):
 
     @memorycheck.check("skeltest")
     def Redo(self):
-        from ooflib.engine import skeletoncontext
         OOF.Skeleton.New(
             name="redotest", microstructure="skeltest",
             x_elements=8, y_elements=8,
@@ -350,8 +280,6 @@ class OOF_Skeleton(unittest.TestCase):
 
     @memorycheck.check("skeltest", "skelcomp")
     def Autoskeleton(self):
-        from ooflib.engine import skeletoncontext
-        from ooflib.SWIG.common import crandom
         crandom.rndmseed(17)
         OOF.Skeleton.Auto(name='modtest',
                           microstructure='skeltest',
@@ -380,6 +308,96 @@ class OOF_Skeleton(unittest.TestCase):
 
     def tearDown(self):
          pass
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+class OOF_Skeleton_Modify(unittest.TestCase):
+    def setUp(self):
+        global skeletoncontext
+        from ooflib.engine import skeletoncontext
+        global skeletonmodifier
+        from ooflib.engine import skeletonmodifier
+        global crandom
+        from ooflib.SWIG.common import crandom
+        global os
+        import os
+
+    # This is a modify pass which may be considered preliminary -- the
+    # only possible target is "AllNodes", because we do not yet know
+    # that we can make selections, or pin nodes, or anything.
+    ## TODO: Actually we do run tests with different selections.  Move
+    ## the Modify test into its own file, and run it after
+    ## skeleton_select_test.py.  Also, combine with the Modify tests
+    ## in skeleton_periodic_test.py.  There's a lot of overlap.
+        
+    def Modify(self):
+        for r in skeletonmodifier.SkeletonModifier.registry:
+            try:
+                mods = skel_modify_args[r.name()]
+            except KeyError:
+                print(f"No data for skeleton modifier {r.name()}.",
+                      file=sys.stderr)
+            else:
+                print("Testing", r.name(), file=sys.stderr)
+                for skelmod in mods:
+                    self.doModify(r, skelmod)
+                    
+    @memorycheck.check("skeltest", "skelcomp")
+    def doModify(self, registration, skelmod):
+        OOF.File.Load.Data(filename=reference_file("skeleton_data",
+                                                   skelmod.startfile))
+        mod = registration(**skelmod.kwargs)
+        crandom.rndmseed(17)
+
+        # This can't be used to change the values of local variables in
+        # this scope, but it can be used to run additional menu commands.
+        for cmd in skelmod.commands:
+            exec(cmd)
+
+        OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
+        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
+        self.assertTrue(skelc.getObject().sanity_check())
+
+        # Saving and reloading the Skeleton guarantees that node
+        # indices match up with the reference Skeleton. Nodes are
+        # re-indexed when a Skeleton is saved.
+        OOF.File.Save.Skeleton(
+            filename="skeleton_mod_test", mode="w", format="ascii",
+            skeleton="skeltest:modtest")
+        OOF.Microstructure.Delete(microstructure="skeltest")
+        OOF.File.Load.Data(filename="skeleton_mod_test")
+
+        # Load the reference Skeleton, which must be named
+        # 'skelcomp:reference'.
+        OOF.File.Load.Data(
+            filename=reference_file("skeleton_data", skelmod.compfile))
+        sk1 = skeletoncontext.skeletonContexts["skeltest:modtest"].getObject()
+        sk2 = skeletoncontext.skeletonContexts["skelcomp:reference"].getObject()
+
+        # Compare the computed and reference Skeletons
+        self.assertEqual(sk1.compare(sk2, skelmod.tolerance), 0)
+        os.remove("skeleton_mod_test")
+
+# SkelModTest is a wrapper for the test data for a SkeletonModifier.
+# It's main purpose is to allow there to be optional arguments, like
+# tolerance.
+
+class SkelModTest:
+    def __init__(self, startfile, compfile, kwargs, commands=[],
+                 tolerance=1.e-13):
+        # The default tolerance is 10e-13, 100x double precision noise.
+        
+        # startfile is a data file containing the unmodified skeleton,
+        # which must be named "skeltest:modtest".
+        self.startfile = startfile
+        # compfile is a data file containing the reference modified
+        # skeleton, which must be named "skelcomp:reference".
+        self.compfile = compfile
+        self.kwargs = kwargs
+        self.commands = commands
+        self.tolerance = tolerance
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#    
 
 # Extra tests that can't be in OOF_Skeleton for one reason or another.
 
@@ -497,382 +515,399 @@ class OOF_Skeleton_Special(unittest.TestCase):
     def RefinementRuleCheck(self):
         from ooflib.engine import refinemethod
         self.assertTrue(refinemethod.checkRefinementRuleSets())
-        
+
 # Data for the skeleton modifier tests.  This is a dictionary indexed by
 # skeleton modifier name, and for each modifier, there is a set of
 # arguments to supply to the modifier menu item for the test, and the
 # name of a file containing correct results for that test.
 skel_modify_args = {}
+
 def build_mod_args():
     global skel_modify_args
     skel_modify_args = {
         "Refine" :
-        [("modbase", "refine_1",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Trisection(minlength=0),
-            "rules": "Quick",
-            "alpha" : 0.5
+        [SkelModTest("modbase", "refine_1",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Trisection(minlength=0),
+                       "rules": "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase", "refine_1L",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Trisection(minlength=0),
+                       "rules": "Large",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase", "refine_2",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Bisection(minlength=0),
+                       "rules" : "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase", "refine_2L",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Bisection(minlength=0),
+                       "rules" : "Large",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_3",
+                     {"targets" : CheckElementsInGroup(group='elementgroup'),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_3L",
+                     {"targets" : CheckElementsInGroup(group='elementgroup'),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Large",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_4",
+                     {"targets" : CheckAllElements(),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_4L",
+                     {"targets" : CheckAllElements(),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Large",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_5",
+                     {"targets" : CheckAspectRatio(threshold=1.5,
+                                                   only_quads=True),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_5L",
+                     {"targets" : CheckAspectRatio(threshold=1.5,
+                                                   only_quads=True),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Large",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_6",
+                     {"targets" :
+                      CheckHeterogeneousSegments(threshold=1,
+                                                 choose_from=FromAllSegments()),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_6L",
+                     {"targets" :
+                      CheckHeterogeneousSegments(threshold=1,
+                                                 choose_from=FromAllSegments()),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Large",
+                      "alpha" : 0.5
            }
           ),
-         ("modbase", "refine_1L",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Trisection(minlength=0),
-            "rules": "Large",
-            "alpha" : 0.5
-           }
-          ),
-         ("modbase", "refine_2",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Bisection(minlength=0),
-            "rules" : "Quick",
-            "alpha" : 0.5
-           }
-          ),
-         ("modbase", "refine_2L",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Bisection(minlength=0),
-            "rules" : "Large",
-            "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_3",
-          {"targets" : CheckElementsInGroup(group='elementgroup'),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Quick",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_3L",
-          {"targets" : CheckElementsInGroup(group='elementgroup'),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Large",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_4",
-          {"targets" : CheckAllElements(),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Quick",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_4L",
-          {"targets" : CheckAllElements(),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Large",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_5",
-          {"targets" : CheckAspectRatio(threshold=1.5, only_quads=True),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Quick",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_5L",
-          {"targets" : CheckAspectRatio(threshold=1.5, only_quads=True),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Large",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_6",
-          {"targets" : CheckHeterogeneousSegments(threshold=1,
-                                               choose_from=FromAllSegments()),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Quick",
-           "alpha" : 0.5
-           }
-          ),
-         ("modgroups","refine_6L",
-          {"targets" : CheckHeterogeneousSegments(threshold=1,
-                                               choose_from=FromAllSegments()),
-           "divider" : Bisection(minlength=0),
-           "rules" : "Large",
-           "alpha" : 0.5
-           }
-          ),
-         ("modtriangle", "refine_7",
-          { "targets" : CheckHomogeneity(threshold=0.6),
-            "divider" : Bisection(minlength=0),
-            "rules" : "Quick",
-            "alpha" : 0.5
-           }
-          ),
-         ("modtriangle", "refine_7L",
-          { "targets" : CheckHomogeneity(threshold=0.6),
-            "divider" : Bisection(minlength=0),
-            "rules" : "Large",
-            "alpha" : 0.5
-           }
-          ),
-         ("modtriangle", "refine_8",
-          { "targets" : CheckHomogeneity(threshold=0.6),
-            "divider" : Trisection(minlength=0),
-            "rules" : "Quick",
-            "alpha" :  0.5
-           }
-          ),
-         ("modtriangle", "refine_8L",
-          { "targets" : CheckHomogeneity(threshold=0.6),
-            "divider" : Trisection(minlength=0),
-            "rules" : "Large",
-            "alpha" :  0.5
-           }
-          ),
-         ("modbase_groups", "refine_9",
-          dict(targets=CheckSegmentsInGroup(group='#00fc00'),
-               divider=Bisection(minlength=0),
-               rules='Quick',alpha=0.3)),
-         ("modbase_groups", "refine_9L",
-          dict(targets=CheckSegmentsInGroup(group='#00fc00'),
-               divider=Bisection(minlength=0),
-               rules='Large',alpha=0.3)),
+         SkelModTest("modtriangle", "refine_7",
+                     { "targets" : CheckHomogeneity(threshold=0.6),
+                       "divider" : Bisection(minlength=0),
+                       "rules" : "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modtriangle", "refine_7L",
+                     { "targets" : CheckHomogeneity(threshold=0.6),
+                       "divider" : Bisection(minlength=0),
+                       "rules" : "Large",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modtriangle", "refine_8",
+                     { "targets" : CheckHomogeneity(threshold=0.6),
+                       "divider" : Trisection(minlength=0),
+                       "rules" : "Quick",
+                       "alpha" :  0.5
+                      }
+                     ),
+         SkelModTest("modtriangle", "refine_8L",
+                     { "targets" : CheckHomogeneity(threshold=0.6),
+                       "divider" : Trisection(minlength=0),
+                       "rules" : "Large",
+                       "alpha" :  0.5
+                      }
+                     ),
+         SkelModTest("modbase_groups", "refine_9",
+                     dict(targets=CheckSegmentsInGroup(group='#00fc00'),
+                          divider=Bisection(minlength=0),
+                          rules='Quick',alpha=0.3)),
+         SkelModTest("modbase_groups", "refine_9L",
+                     dict(targets=CheckSegmentsInGroup(group='#00fc00'),
+                          divider=Bisection(minlength=0),
+                          rules='Large',alpha=0.3)),
 
          # Tests with square pixels that are smaller than 1x1 in
          # physical units.  This checks that minlength is being
          # interpreted in pixel units.
-         ("modbase_small", "refine_small0",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Bisection(minlength=10), # does no division
-            "rules": "Quick",
-            "alpha" : 0.5
-           }
-          ),
-         ("modbase_small", "refine_small1",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Bisection(minlength=2),
-            "rules": "Quick",
-            "alpha" : 0.5
-           }
-          ),
-         ("modbase_small", "refine_small2",
-          { "targets" : CheckHomogeneity(threshold=0.9),
-            "divider" : Trisection(minlength=2),
-            "rules": "Quick",
-            "alpha" : 0.5
-           }
-          ),
+         SkelModTest("modbase_small", "refine_small0",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Bisection(minlength=10), # does no division
+                       "rules": "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase_small", "refine_small1",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Bisection(minlength=2),
+                       "rules": "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase_small", "refine_small2",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Trisection(minlength=2),
+                       "rules": "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
          # TransitionPoint Refinement tests, nee SnapRefine.  These
          # use dict() instead of {} because I copied the arguments out
          # of an oof2 log.
-         ("modbase", "snaprefine_1",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=0.1),
-               rules='Quick',
-               alpha=0.5)),
-         ("modbase", "snaprefine_1L",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=0.1),
-               rules='Large',
-               alpha=0.5)),
-         ("modtriangle", "snaprefine_1T",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=0.1),
-               rules='Quick',
-               alpha=0.5)),
-         ("modtriangle", "snaprefine_1LT",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=0.1),
-               rules='Large',
-               alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_1",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=0.1),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_1L",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=0.1),
+                          rules='Large',
+                          alpha=0.5)),
+         SkelModTest("modtriangle", "snaprefine_1T",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=0.1),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("modtriangle", "snaprefine_1LT",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=0.1),
+                          rules='Large',
+                          alpha=0.5)),
          # snaprefine_2 is just like snaprefine_1 but has larger minlengths
-         ("modbase", "snaprefine_2",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=2.0),
-               rules='Quick',
-               alpha=0.5)),
-         ("modbase", "snaprefine_2L",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=2.0),
-               rules='Large',
-               alpha=0.5)),
-         ("modtriangle", "snaprefine_2T",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=5.0),
-               rules='Quick',
-               alpha=0.5)),
-         ("modtriangle", "snaprefine_2LT",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=5.0),
-               rules='Large',
-               alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_2",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=2.0),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_2L",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=2.0),
+                          rules='Large',
+                          alpha=0.5)),
+         SkelModTest("modtriangle", "snaprefine_2T",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=5.0),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("modtriangle", "snaprefine_2LT",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=5.0),
+                          rules='Large',
+                          alpha=0.5)),
 
          # Mixed quads and triangles, checking homogeneity, for both
          # quick and large rule sets.
-         ("modbase", "snaprefine_3",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=2.0),
-               rules='Quick',
-               alpha=0.5)),
-         ("modbase", "snaprefine_3L",
-          dict(targets=CheckHomogeneity(threshold=0.9),
-               divider=TransitionPoints(minlength=2.0),
-               rules='Large',
-               alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_3",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=2.0),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("modbase", "snaprefine_3L",
+                     dict(targets=CheckHomogeneity(threshold=0.9),
+                          divider=TransitionPoints(minlength=2.0),
+                          rules='Large',
+                          alpha=0.5)),
          
          #  Checking aspect ratio
-         ("highaspect", "snaprefine_4",
-          dict(targets=CheckAspectRatio(threshold=5, only_quads=True),
-               divider=TransitionPoints(minlength=2),
-               rules='Quick',
-               alpha=0.5)),
-         ("highaspect", "snaprefine_4a",
-          dict(targets=CheckAspectRatio(threshold=3, only_quads=True),
-               divider=TransitionPoints(minlength=2),
-               rules='Quick',
-               alpha=0.5)),
-         ("highaspect", "snaprefine_4L",
-          dict(targets=CheckAspectRatio(threshold=5, only_quads=True),
-               divider=TransitionPoints(minlength=2),
-               rules='Large',
-               alpha=0.5)),
-         ("highaspect", "snaprefine_4T",
-          dict(targets=CheckAspectRatio(threshold=5, only_quads=False),
-               divider=TransitionPoints(minlength=2),
-               rules='Quick',
-               alpha=0.5)),
-         ("highaspect", "snaprefine_4TL",
-          dict(targets=CheckAspectRatio(threshold=5, only_quads=False),
-               divider=TransitionPoints(minlength=2),
-               rules='Large',
-               alpha=0.5))
+         SkelModTest("highaspect", "snaprefine_4",
+                     dict(targets=CheckAspectRatio(threshold=5,
+                                                   only_quads=True),
+                          divider=TransitionPoints(minlength=2),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("highaspect", "snaprefine_4a",
+                     dict(targets=CheckAspectRatio(threshold=3,
+                                                   only_quads=True),
+                          divider=TransitionPoints(minlength=2),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("highaspect", "snaprefine_4L",
+                     dict(targets=CheckAspectRatio(threshold=5,
+                                                   only_quads=True),
+                          divider=TransitionPoints(minlength=2),
+                          rules='Large',
+                          alpha=0.5)),
+         SkelModTest("highaspect", "snaprefine_4T",
+                     dict(targets=CheckAspectRatio(threshold=5,
+                                                   only_quads=False),
+                          divider=TransitionPoints(minlength=2),
+                          rules='Quick',
+                          alpha=0.5)),
+         SkelModTest("highaspect", "snaprefine_4TL",
+                     dict(targets=CheckAspectRatio(threshold=5,
+                                                   only_quads=False),
+                          divider=TransitionPoints(minlength=2),
+                          rules='Large',
+                          alpha=0.5))
          ],
         "Relax" :
-        [("modbase", "relax",
-          { "alpha" : 0.5,
-            "gamma" : 0.5,
-            "iterations" : 1
-           }
-          )
+        [SkelModTest("modbase", "relax",
+                     { "alpha" : 0.5,
+                       "gamma" : 0.5,
+                       "iterations" : 1
+                      },
+                     # This test fails on an Intel iMac when the
+                     # reference file is generated on an M1 MacBook,
+                     # and vice versa, if the tolerance is less than
+                     # 1.e-5.  I do not understand this.
+                     tolerance=1.e-5
+                     )
          ],
         "Snap Nodes" :
-        [("modbase_groups", "snapnodes_0",
-          dict(targets=SnapAll(),
-               criterion=AverageEnergy(alpha=0.8))),
-         ("modbase_groups", "snapnodes_0a",
-          dict(targets=SnapAll(),
-               criterion=AverageEnergy(alpha=0.5))),
-         ("modbase_groups", "snapnodes_1",
-          dict(targets=SnapSelectedNodes(),
-               criterion=AverageEnergy(alpha=0.8)),
-          "OOF.NodeSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"),
-         ("modbase_groups", "snapnodes_1a",
-          dict(targets=SnapSelectedNodes(),
-               criterion=AverageEnergy(alpha=1.0)),
-          "OOF.NodeSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"
+        [SkelModTest("modbase_groups", "snapnodes_0",
+                     dict(targets=SnapAll(),
+                          criterion=AverageEnergy(alpha=0.8))),
+         SkelModTest("modbase_groups", "snapnodes_0a",
+                     dict(targets=SnapAll(),
+                          criterion=AverageEnergy(alpha=0.5))),
+         SkelModTest("modbase_groups", "snapnodes_1",
+                     dict(targets=SnapSelectedNodes(),
+                          criterion=AverageEnergy(alpha=0.8)),
+                     commands=["OOF.NodeSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"]),
+         SkelModTest("modbase_groups", "snapnodes_1a",
+                     dict(targets=SnapSelectedNodes(),
+                          criterion=AverageEnergy(alpha=1.0)),
+                     commands=["OOF.NodeSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"]
           ),
-         ("modbase_groups", "snapnodes_2",
-          dict(targets=SnapHeterogeneousElements(threshold=0.9),
-               criterion=AverageEnergy(alpha=0.8))),
-         ("modbase_groups", "snapnodes_3",
-          dict(targets=SnapSelectedElements(),
-               criterion=AverageEnergy(alpha=0.8)),
-          "OOF.ElementSelection.Select_Group(skeleton='skeltest:modtest', group='#00fc00')"
+         SkelModTest("modbase_groups", "snapnodes_2",
+                     dict(targets=SnapHeterogeneousElements(threshold=0.9),
+                          criterion=AverageEnergy(alpha=0.8))),
+         SkelModTest("modbase_groups", "snapnodes_3",
+                     dict(targets=SnapSelectedElements(),
+                          criterion=AverageEnergy(alpha=0.8)),
+                     commands=["OOF.ElementSelection.Select_Group(skeleton='skeltest:modtest', group='#00fc00')"]
           ),
-         ("modbase_groups", "snapnodes_4",
-          dict(targets=SnapHeterogeneousSegments(threshold=0.9),
-               criterion=AverageEnergy(alpha=0.8))),
-         ("modbase_groups", "snapnodes_5",
-          dict(targets=SnapSelectedSegments(),criterion=AverageEnergy(alpha=0.8)),
-          "OOF.SegmentSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"
-          )
+         SkelModTest("modbase_groups", "snapnodes_4",
+                     dict(targets=SnapHeterogeneousSegments(threshold=0.9),
+                          criterion=AverageEnergy(alpha=0.8))),
+         SkelModTest("modbase_groups", "snapnodes_5",
+                     dict(targets=SnapSelectedSegments(),
+                          criterion=AverageEnergy(alpha=0.8)),
+                     commands=["OOF.SegmentSelection.Select_Group(skeleton='skeltest:modtest', group='#f8fc00')"]
+                     )
          ],
 
         "Split Quads" :
-        [ ("modbase", "splitquads",
-           { "targets" : AllElements(),
-             "criterion" : AverageEnergy(alpha=0.9),
-             "split_how" : GeographicQ2T()
-            }
-           )
+        [SkelModTest("modbase", "splitquads",
+                     { "targets" : AllElements(),
+                       "criterion" : AverageEnergy(alpha=0.9),
+                       "split_how" : GeographicQ2T()
+                      }
+                     )
          ],
         "Anneal" :
-        [("modbase", "anneal",
-          {"targets" : AllNodes(),
-           "criterion" : AverageEnergy(alpha=0.6),
-           "T" : 0.0,
-           "delta" : 1.0,
-           "iteration" : FixedIteration(iterations=5)            
-           }
-          ),
-         ("modgroups", "anneal_2",
-          {"targets" : NodesInGroup(group='nodegroup'),
-           "criterion" : AverageEnergy(alpha=0.6),
-           "T" : 0.0,
-           "delta" : 1.0,
-           "iteration" : FixedIteration(iterations=5)            
-           }
-          ),
-         ("modgroups", "anneal_3",
-          {"targets" : FiddleElementsInGroup(group='elementgroup'),
-           "criterion" : AverageEnergy(alpha=0.6),
-           "T" : 0.0,
-           "delta" : 1.0,
-           "iteration" : FixedIteration(iterations=5)            
-           }
-          ),
-         ("modgroups", "anneal_4",
-          {"targets" : FiddleHeterogeneousElements(threshold=0.95),
-           "criterion" : AverageEnergy(alpha=0.6),
-           "T" : 0.0,
-           "delta" : 1.0,
-           "iteration" : FixedIteration(iterations=5)            
-           }
-          )
+        [SkelModTest("modbase", "anneal",
+                     {"targets" : AllNodes(),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_2",
+                     {"targets" : NodesInGroup(group='nodegroup'),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_3",
+                     {"targets" : FiddleElementsInGroup(group='elementgroup'),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_4",
+                     {"targets" : FiddleHeterogeneousElements(threshold=0.95),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     )
          ],
         "Smooth" :
-        [ ("modsecond", "smooth",
-           {"targets" : AllNodes(),
-            "criterion" : AverageEnergy(alpha=0.3),
-            "T" : 0.0,
-            "iteration" : FixedIteration(iterations=5)
-            }
-           )
+        [SkelModTest("modsecond", "smooth",
+                     {"targets" : AllNodes(),
+                      "criterion" : AverageEnergy(alpha=0.3),
+                      "T" : 0.0,
+                      "iteration" : FixedIteration(iterations=5)
+                      }
+                     )
          ],
         "Swap Edges" :
-        [ ("modsecond", "swapedges",
-           {"targets" : AllElements(),
-            "criterion" : AverageEnergy(alpha=0.3)
-            }
-           )
+        [SkelModTest("modsecond", "swapedges",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3)
+                      }
+                     )
          ],
         "Merge Triangles" :
-        [ ("modsecond", "mergetriangles",
-           {"targets" : AllElements(),
-            "criterion" : AverageEnergy(alpha=0.3)
-            }
-           )
-         ],
+        [SkelModTest("modsecond", "mergetriangles",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3)
+                      }
+                     )
+        ],
         "Rationalize" :
-        [("modsecond", "rationalize",
-          {"targets" : AllElements(),
-           "criterion" : AverageEnergy(alpha=0.3),
-           "method" : SpecificRationalization(
-               rationalizers=[RemoveShortSide(ratio=5.0),
-                              QuadSplit(angle=150),
-                              RemoveBadTriangle(acute_angle=30,
-                                                obtuse_angle=130)]),
-           "iterations" : 3
-           }
-          )
+        [SkelModTest("modsecond", "rationalize",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3),
+                      "method" : SpecificRationalization(
+                          rationalizers=[RemoveShortSide(ratio=5.0),
+                                         QuadSplit(angle=150),
+                                         RemoveBadTriangle(acute_angle=30,
+                                                           obtuse_angle=130)]),
+                      "iterations" : 3
+                      }
+                     )
          ],
 
         "Fix Illegal Elements" :
-        [("illegal_skeleton", "illegal_fixed", {})
-        ]
+        [SkelModTest("illegal_skeleton", "illegal_fixed", {})
+         ]
     }
 
     # print("NOT RUNNING THE FULL SET OF SKELETON MODIFICATION TESTS")
     # skel_modify_args = {
     #     "Relax" :
-    #     [("modbase", "relax",
-    #       { "alpha" : 0.5,
-    #         "gamma" : 0.5,
-    #         "iterations" : 1
-    #        }
-    #       )
+    #     [SkelModTest("modbase", "relax",
+    #                  { "alpha" : 0.5,
+    #                    "gamma" : 0.5,
+    #                    "iterations" : 1
+    #                   },
+    #                  tolerance=1.e-13
+    #                  )
     #      ],
     # }
 
@@ -892,7 +927,7 @@ skel_set = [
     OOF_Skeleton("Save"),
     OOF_Skeleton("Load"),
     OOF_Skeleton("Homogeneity"),
-    OOF_Skeleton("Modify"),
+    OOF_Skeleton_Modify("Modify"),
     OOF_Skeleton("Autoskeleton"),    
     OOF_Skeleton("Undo"),
     OOF_Skeleton("Redo")
@@ -908,6 +943,6 @@ special_set = [
 
 test_set = skel_set + special_set
 
-test_set = [
-    OOF_Skeleton("Modify"),
-]
+# test_set = [
+#     OOF_Skeleton_Modify("Modify"),
+# ]

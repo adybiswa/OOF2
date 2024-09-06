@@ -159,78 +159,6 @@ class OOF_Skeleton(unittest.TestCase):
         self.assertEqual(skel.nelements(), 64)
         self.assertEqual(self.nPartneredNodes(skel),32)
         
-    ## TODO: doModify loads its own Skeleton and doesn't use the one
-    ## loaded by setUp(), so it should be in a different TestCase
-    ## subclass.
-    @memorycheck.check("skeltest")
-    def doModify(self, registration, startfile, compfile, kwargs, commands):
-        import os
-        from ooflib.SWIG.common import crandom
-        # Loaded skeleton must be named "modtest".
-        OOF.File.Load.Data(
-            filename=reference_file("skeleton_data","periodic_mods", startfile))
-        mod = registration(**kwargs)
-        crandom.rndmseed(17)
-        if commands:
-            for cmd in commands:
-                exec(cmd)
-        OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
-        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
-        self.assertTrue(skelc.getObject().sanity_check())
-        fname = reference_file("skeleton_data", "periodic_mods", compfile)
-        if generate and not os.path.exists(fname):
-            # Save the new Skeleton under a different name
-            OOF.Microstructure.Rename(microstructure="skeltest",
-                                      name="reference")
-            OOF.File.Save.Skeleton(filename=fname, mode="w", format="ascii",
-                                   skeleton="reference:modtest")
-            # Change the name back, so that tearDown won't complain.
-            OOF.Microstructure.Rename(microstructure="reference",
-                                      name="skeltest")
-            print("*** Saved new reference file as", fname)
-        else:
-            # Saving and reloading the Skeleton guarantees that node
-            # indices match up with the reference skeleton.  Nodes are
-            # re-indexed when a skeleton is saved.
-            OOF.File.Save.Skeleton(
-                filename="skeleton_mod_test",
-                mode="w", format="ascii",
-                skeleton="skeltest:modtest")
-            OOF.Microstructure.Delete(microstructure="skeltest")
-            OOF.File.Load.Data(filename="skeleton_mod_test")
-            # Load the reference Skeleton.
-            OOF.File.Load.Data(filename=fname)
-            # Compare the two Skeletons
-            sk1 = skeletoncontext.skeletonContexts[
-                "skeltest:modtest"].getObject()
-            sk2 = skeletoncontext.skeletonContexts[
-                "reference:modtest"].getObject()
-            # Tolerance is 1.0e-13, 100x double-precision noise.
-            ## After switching to Eigen 3.3.9 it was necessary
-            ## to increase the tolerance to get the new calculations to
-            ## "agree" with the old reference files for the Relax test.
-            ## TODO: Recompute the reference files.
-            self.assertEqual(sk1.compare(sk2, 1.0e-6), 0)
-            os.remove("skeleton_mod_test")
-            OOF.Microstructure.Delete(microstructure="reference")
-
-    # This is a modify pass which may be considered preliminary -- the
-    # only possible target is "AllNodes", because we do not yet know
-    # that we can make selections, or pin nodes, or anything.
-    def Modify(self):
-        from ooflib.engine import skeletonmodifier
-        for r in skeletonmodifier.SkeletonModifier.registry:
-            try:
-                mods = skel_modify_args[r.name()]
-            except KeyError:
-                print(f"No data for skeleton modifier {r.name()}",
-                      file=sys.stderr)
-            else:
-                # Saved skeleton must be named "modtest".
-                for (startfile, compfile, kwargs, *commands) in mods:
-                    self.doModify(r, startfile, compfile, kwargs, commands)
-            
-        
     @memorycheck.check("skeltest")
     def Undo(self):
         from ooflib.engine import skeletoncontext
@@ -279,6 +207,96 @@ class OOF_Skeleton(unittest.TestCase):
         self.assertEqual(id(sk_1),id(sk_context.getObject()))
         self.assertTrue(not sk_context.redoable())
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+class OOF_Skeleton_Modify(unittest.TestCase):
+    def setUp(self):
+        global skeletoncontext
+        from ooflib.engine import skeletoncontext
+        global skeletonmodifier
+        from ooflib.engine import skeletonmodifier
+        global crandom
+        from ooflib.SWIG.common import crandom
+        global os
+        import os
+
+    def Modify(self):
+        for r in skeletonmodifier.SkeletonModifier.registry:
+            try:
+                mods = skel_modify_args[r.name()]
+            except KeyError:
+                print(f"No data for skeleton modifier {r.name()}.",
+                      file=sys.stderr)
+            else:
+                print("Testing", r.name(), file=sys.stderr)
+                for skelmod in mods:
+                    self.doModify(r, skelmod)
+
+    @memorycheck.check("skeltest", "reference")
+    def doModify(self, registration, skelmod):
+        OOF.File.Load.Data(
+            filename=reference_file("skeleton_data", "periodic_mods",
+                                    skelmod.startfile))
+        mod = registration(**skelmod.kwargs)
+        crandom.rndmseed(17)
+        for cmd in skelmod.commands:
+            exec(cmd)
+        OOF.Skeleton.Modify(skeleton="skeltest:modtest", modifier=mod)
+        skelc = skeletoncontext.skeletonContexts["skeltest:modtest"]
+        self.assertTrue(skelc.getObject().sanity_check())
+
+        fname = reference_file("skeleton_data", "periodic_mods",
+                               skelmod.compfile)
+        if generate and not os.path.exists(fname):
+            # Save the new Skeleton under a different name
+            OOF.Microstructure.Rename(microstructure="skeltest",
+                                      name="reference")
+            OOF.File.Save.Skeleton(filename=fname, mode="w",
+                                   format="ascii", skeleton="reference:modtest")
+            # Change the name back, so that tearDown won't complain
+            OOF.Microstructure.Rename(microstructure="reference",
+                                      name="skeltest")
+            print("*** Saved new reference file as", fname)
+        else:
+            # Saving and reloading the Skeleton guarantees that node
+            # indices match up with the reference skeleton.  Nodes are
+            # re-indexed when a Skeleton is saved.
+            OOF.File.Save.Skeleton(
+                filename="skeleton_mod_test", mode="w", format="ascii",
+                skeleton="skeltest:modtest")
+            OOF.Microstructure.Delete(microstructure="skeltest")
+            OOF.File.Load.Data(filename="skeleton_mod_test")
+            # Load the reference Skeleton
+            OOF.File.Load.Data(filename=fname)
+            # Compare the two Skeletons
+            sk1 = skeletoncontext.skeletonContexts[
+                "skeltest:modtest"].getObject()
+            sk2 = skeletoncontext.skeletonContexts[
+                "reference:modtest"].getObject()
+            self.assertEqual(sk1.compare(sk2, skelmod.tolerance), 0)
+            os.remove("skeleton_mod_test")
+        
+
+# SkelModTest is a wrapper for the test data for a SkeletonModifier.
+# It's main purpose is to allow there to be optional arguments, like
+# tolerance.
+
+class SkelModTest:
+    def __init__(self, startfile, compfile, kwargs, commands=[],
+                 tolerance=1.e-13):
+        # The default tolerance is 10e-13, 100x double precision noise.
+        
+        # startfile is a data file containing the unmodified skeleton,
+        # which must be named "skeltest:modtest".
+        self.startfile = startfile
+        # compfile is a data file containing the reference modified
+        # skeleton, which must be named "skelcomp:reference".
+        self.compfile = compfile
+        self.kwargs = kwargs
+        self.commands = commands
+        self.tolerance = tolerance
+    
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Extra test -- now that skeletons are known to work, we can test if
 # deleting a microstructure which contains a skeleton does the right
@@ -408,189 +426,185 @@ def build_mod_args():
     global skel_modify_args
     skel_modify_args = {
         "Refine" :
-        [
-            ("modbase", "refine_1",
-             { "targets" : CheckHomogeneity(threshold=0.9),
-               "divider" : Trisection(minlength=0),
-               "rules" : "Quick",
-               "alpha" : 0.5
+        [SkelModTest("modbase", "refine_1",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Trisection(minlength=0),
+                       "rules" : "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modbase", "refine_2",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : Bisection(minlength=0),
+                       "rules" : "Quick",
+                       "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_3",
+                     {"targets" : CheckElementsInGroup(group='elementgroup'),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_4",
+                     {"targets" : CheckAllElements(),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_5",
+                     {"targets" : CheckAspectRatio(threshold=1.5,
+                                                   only_quads=True),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
+                      }
+                     ),
+         SkelModTest("modgroups","refine_6",
+                     {"targets" : CheckHeterogeneousSegments(
+                         threshold=1, choose_from=FromAllSegments()),
+                      "divider" : Bisection(minlength=0),
+                      "rules" : "Quick",
+                      "alpha" : 0.5
               }
-             ),
-            ("modbase", "refine_2",
-             { "targets" : CheckHomogeneity(threshold=0.9),
-               "divider" : Bisection(minlength=0),
-               "rules" : "Quick",
-               "alpha" : 0.5
-              }
-             ),
-            ("modgroups","refine_3",
-             {"targets" : CheckElementsInGroup(group='elementgroup'),
-              "divider" : Bisection(minlength=0),
-              "rules" : "Quick",
-              "alpha" : 0.5
-              }
-             ),
-            ("modgroups","refine_4",
-             {"targets" : CheckAllElements(),
-              "divider" : Bisection(minlength=0),
-              "rules" : "Quick",
-              "alpha" : 0.5
-              }
-             ),
-            ("modgroups","refine_5",
-             {"targets" : CheckAspectRatio(threshold=1.5, only_quads=True),
-              "divider" : Bisection(minlength=0),
-              "rules" : "Quick",
-              "alpha" : 0.5
-              }
-             ),
-            ("modgroups","refine_6",
-             {"targets" : CheckHeterogeneousSegments(
-                 threshold=1, choose_from=FromAllSegments()),
-              "divider" : Bisection(minlength=0),
-              "rules" : "Quick",
-              "alpha" : 0.5
-              }
-             ),
-            # Old SnapRefine tests
-            ("modbase", "snaprefine_1",
-             { "targets" : CheckHomogeneity(threshold=0.9),
-               "divider" : TransitionPoints(minlength=0.01),
-               "rules" : 'Quick',
-               "alpha": 0.5
-              }
-             ),
-            ("modgroups", "snaprefine_2",
-             {"targets" : CheckElementsInGroup(group='elementgroup'),
-              "divider" : TransitionPoints(minlength=1.0),
-              "alpha": 0.5
-              }
-             ),
-            ("modgroups2", "snaprefine_3",
-             {"targets" : CheckAllElements(),
-              "divider" : TransitionPoints(minlength=1.0),
-              "alpha": 0.5
-              }
-             ),
-            ("modgroups", "snaprefine_4",
-             {"targets" : CheckAspectRatio(threshold=1.5, only_quads=True),
-              "divider" : TransitionPoints(minlength=0.01),
-              "alpha": 0.5
-              }
-             ),
-            ("modgroups", "snaprefine_4a",
-             {"targets" : CheckAspectRatio(threshold=1.5, only_quads=True),
-              "divider" : TransitionPoints(minlength=2.0),
-              "alpha": 0.5
-              }
-             ),
-            ("modgroups2", "snaprefine_5",
-             {"targets" :
-              CheckHeterogeneousSegments(threshold=1,
-                                         choose_from=FromAllSegments()),
-              "divider" : TransitionPoints(minlength=2.0),
-              "alpha": 0.5
-              }
-             ),
-            ("modbase1x1", "snaprefine_1x1",
-             {"targets" : CheckHomogeneity(threshold=0.9),
-              "divider" : TransitionPoints(minlength=1.0),
-              "alpha": 0.5
-              }
-             )
-        ],
+                     ),
+         # Old SnapRefine tests
+         SkelModTest("modbase", "snaprefine_1",
+                     { "targets" : CheckHomogeneity(threshold=0.9),
+                       "divider" : TransitionPoints(minlength=0.01),
+                       "rules" : 'Quick',
+                       "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modgroups", "snaprefine_2",
+                     {"targets" : CheckElementsInGroup(group='elementgroup'),
+                      "divider" : TransitionPoints(minlength=1.0),
+                      "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modgroups2", "snaprefine_3",
+                     {"targets" : CheckAllElements(),
+                      "divider" : TransitionPoints(minlength=1.0),
+                      "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modgroups", "snaprefine_4",
+                     {"targets" : CheckAspectRatio(threshold=1.5,
+                                                   only_quads=True),
+                      "divider" : TransitionPoints(minlength=0.01),
+                      "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modgroups", "snaprefine_4a",
+                     {"targets" : CheckAspectRatio(threshold=1.5,
+                                                   only_quads=True),
+                      "divider" : TransitionPoints(minlength=2.0),
+                      "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modgroups2", "snaprefine_5",
+                     {"targets" :
+                      CheckHeterogeneousSegments(threshold=1,
+                                                 choose_from=FromAllSegments()),
+                      "divider" : TransitionPoints(minlength=2.0),
+                      "alpha": 0.5
+                      }
+                     ),
+         SkelModTest("modbase1x1", "snaprefine_1x1",
+                     {"targets" : CheckHomogeneity(threshold=0.9),
+                      "divider" : TransitionPoints(minlength=1.0),
+                      "alpha": 0.5
+                      }
+                     )
+         ],
         "Relax" :
-        [
-            ("modbase", "relax",
-             { "alpha" : 0.5,
-               "gamma" : 0.5,
-               "iterations" : 1
-              }
-             )
-        ],
+        [SkelModTest("modbase", "relax",
+                     { "alpha" : 0.5,
+                       "gamma" : 0.5,
+                       "iterations" : 1
+                      },
+                     tolerance=2.e-5
+                     )
+         ],
         "Snap Nodes" :
-        [
-            ("modbase", "snapnodes",
-             { "targets" : SnapAll(),
-               "criterion" : AverageEnergy(alpha=0.8)
-              }
-             )
-        ],
+        [SkelModTest("modbase", "snapnodes",
+                     { "targets" : SnapAll(),
+                       "criterion" : AverageEnergy(alpha=0.8)
+                      }
+                     )
+         ],
         "Anneal" :
-        [
-            ("modbase", "anneal",
-             {"targets" : AllNodes(),
-              "criterion" : AverageEnergy(alpha=0.6),
-              "T" : 0.0,
-              "delta" : 1.0,
-              "iteration" : FixedIteration(iterations=5)            
-              }
-             ),
-            ("modgroups", "anneal_2",
-             {"targets" : NodesInGroup(group='nodegroup'),
-              "criterion" : AverageEnergy(alpha=0.6),
-              "T" : 0.0,
-              "delta" : 1.0,
-              "iteration" : FixedIteration(iterations=5)            
-              }
-             ),
-            ("modgroups", "anneal_3",
-             {"targets" : FiddleElementsInGroup(group='elementgroup'),
-              "criterion" : AverageEnergy(alpha=0.6),
-              "T" : 0.0,
-              "delta" : 1.0,
-              "iteration" : FixedIteration(iterations=5)            
-              }
-             ),
-            ("modgroups", "anneal_4",
-             {"targets" : FiddleHeterogeneousElements(threshold=0.95),
-              "criterion" : AverageEnergy(alpha=0.6),
-              "T" : 0.0,
-              "delta" : 1.0,
-              "iteration" : FixedIteration(iterations=5)            
-              }
-             )
-        ],
+        [SkelModTest("modbase", "anneal",
+                     {"targets" : AllNodes(),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_2",
+                     {"targets" : NodesInGroup(group='nodegroup'),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_3",
+                     {"targets" : FiddleElementsInGroup(group='elementgroup'),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     ),
+         SkelModTest("modgroups", "anneal_4",
+                     {"targets" : FiddleHeterogeneousElements(threshold=0.95),
+                      "criterion" : AverageEnergy(alpha=0.6),
+                      "T" : 0.0,
+                      "delta" : 1.0,
+                      "iteration" : FixedIteration(iterations=5)            
+                      }
+                     )
+         ],
         "Smooth" :
-        [
-            ("modgroups", "smooth",
-             {"targets" : AllNodes(),
-              "criterion" : AverageEnergy(alpha=0.3),
-              "T" : 0.0,
-              "iteration" : FixedIteration(iterations=5)
-              }
-             )
-        ],
+        [SkelModTest("modgroups", "smooth",
+                     {"targets" : AllNodes(),
+                      "criterion" : AverageEnergy(alpha=0.3),
+                      "T" : 0.0,
+                      "iteration" : FixedIteration(iterations=5)
+                      }
+                     )
+         ],
         "Swap Edges" :
-        [
-            ("modgroups", "swapedges",
-             {"targets" : AllElements(),
-              "criterion" : AverageEnergy(alpha=0.3)
-              }
-             )
-        ],
+        [SkelModTest("modgroups", "swapedges",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3)
+                      }
+                     )
+         ],
         "Merge Triangles" :
-        [
-            ("modgroups", "mergetriangles",
-             {"targets" : AllElements(),
-              "criterion" : AverageEnergy(alpha=0.3)
-              }
-             )
-        ],
+        [SkelModTest("modgroups", "mergetriangles",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3)
+                      }
+                     )
+         ],
         "Rationalize" :
-        [
-            ("modgroups", "rationalize",
-             {"targets" : AllElements(),
-              "criterion" : AverageEnergy(alpha=0.3),
-              "method" : SpecificRationalization(
-                  rationalizers=[
-                      RemoveShortSide(ratio=5.0),
-                      QuadSplit(angle=150),
-                      RemoveBadTriangle(acute_angle=30,obtuse_angle=130)]),
-              "iterations" : 3
-              }
-             )
-        ],
+        [SkelModTest("modgroups", "rationalize",
+                     {"targets" : AllElements(),
+                      "criterion" : AverageEnergy(alpha=0.3),
+                      "method" : SpecificRationalization(
+                          rationalizers=[
+                              RemoveShortSide(ratio=5.0),
+                              QuadSplit(angle=150),
+                              RemoveBadTriangle(acute_angle=30,obtuse_angle=130)]),
+                      "iterations" : 3
+                      }
+                     )
+         ],
     }
 
 def initialize():
@@ -607,7 +621,7 @@ skel_set = [
     OOF_Skeleton("Rename"),
     OOF_Skeleton("Save"),
     OOF_Skeleton("Load"),
-    OOF_Skeleton("Modify"),
+    OOF_Skeleton_Modify("Modify"),
     OOF_Skeleton("Undo"),
     OOF_Skeleton("Redo")
     ]
