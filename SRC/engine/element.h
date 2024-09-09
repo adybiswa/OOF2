@@ -248,18 +248,6 @@ public:
 					 SpaceIndex *,
 					 const MasterPosition &) const;
 
-  // ArithmeticOutputValue outputFieldTimeDeriv(const FEMesh*, const Field&,
-  // 					     const MasterPosition&) const;
-
-  // std::vector<ArithmeticOutputValue> *outputFieldTimeDerivs(
-  // 					    const FEMesh*,
-  // 					    const Field&,
-  // 					    const std::vector<MasterCoord*>*)
-  //   const;
-
-  // ArithmeticOutputValue outputFlux(const FEMesh*, const Flux&, const MasterPosition&)
-  //   const;
-
   std::vector<ArithmeticOutputValue> *outputFluxes(
 					   const FEMesh*,
 					   const Flux &flux,
@@ -267,12 +255,6 @@ public:
     const;
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
-
-//   // Wrappers for Material::begin_element and Material::end_element,
-//   // to be called when doing material dependent computations outside
-//   // of the make_stiffness machinery.
-//   void begin_material_computation(FEMesh*) const;
-//   void end_material_computation(FEMesh*) const;
 
   // Identify the edge between the two given nodes as an exterior edge.
   void set_exterior(const Node&, const Node&);

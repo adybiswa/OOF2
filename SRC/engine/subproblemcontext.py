@@ -413,7 +413,6 @@ class SubProblemContext(whoville.Who):
 
         if (self.solveFlag and self.solver_mode and
             self.time_stepper.derivOrder() > 0):
-
             # Define the time derivative field for all fields, even
             # those that don't use it explicitly when solving.  They
             # might need it to compute outputs, or to evaluate a
@@ -428,22 +427,6 @@ class SubProblemContext(whoville.Who):
                     if self.getObject().define_field(td):
                         newfields.add(td)
             
-            ## This version defines only the time derivative fields that
-            ## are necessitated by the solvers.
-            # tdrequired = self.time_stepper.require_timederiv_field()
-            # if tdrequired:
-            #     fields = self.all_compound_fields()
-            # else:
-            #     fields = self.second_order_fields()
-            # for fld in fields:
-            #     td = fld.time_derivative()
-            #     if self.getObject().define_field(td):
-            #         newfields.add(td)
-            #     oop = fld.out_of_plane()
-            #     if self.is_defined_field(oop):
-            #         td = fld.out_of_plane_time_derivative()
-            #         if self.getObject().define_field(td):
-            #             newfields.add(td)
         return newfields
 
     def solver_precompute(self, solving=False):
@@ -1178,8 +1161,9 @@ class SubProblemContext(whoville.Who):
 
     def moveOn(self):           # Get ready for the next time step
         self.set_mesh_dofs(self.endValues, self.endTime)
-        ## TODO: Is setting startValues necessary here? It was already
-        ## done by endStep(), which is called earlier in evolve_to().
+        ## TODO TIMEDERIV: Is setting startValues necessary here? It
+        ## was already done by endStep(), which is called earlier in
+        ## evolve_to().
         #self.startValues = self.endValues.clone()
         self.startTime = self.endTime
         self.endTime = None

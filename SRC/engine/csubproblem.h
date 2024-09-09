@@ -125,10 +125,7 @@ public:
   // from the mesh to the given vector, or vice versa.  This includes
   // *all* dofs, both fixed and free, field and derivative.
   bool set_meshdofs(const DoubleVec*) const;
-  DoubleVec *get_meshdofs() const;
-
-  // void set_meshAuxDerivs(const DoubleVec*, const LinearizedSystem*,
-  // 			 DoubleVec*) const;
+  DoubleVec *get_meshdofs() const; 
 
 
   // Given the subproblem index i of a DoF, dof2Deriv[i] is the

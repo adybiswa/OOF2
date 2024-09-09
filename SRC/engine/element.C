@@ -208,18 +208,6 @@ void Element::post_process(CSubProblem *subproblem) const {
   }
 }
 
-// void Element::begin_material_computation(FEMesh *mesh) const {
-//   const Material *mat = material();
-//   if(mat)
-//     mat->begin_element(mesh, this);
-// }
-
-// void Element::end_material_computation(FEMesh *mesh) const {
-//   const Material *mat = material();
-//   if(mat)
-//     mat->end_element(mesh, this);
-// }
-
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
 int Element::appendData(ElementData *x) const {
@@ -579,22 +567,6 @@ Element::outputFields(const FEMesh *mesh, const Field &field,
   return results;
 }
 
-// std::vector<OutputValue> *
-// Element::outputFieldsAnyway(const CSubProblem *mesh, const Field &field,
-// 			    const std::vector<MasterCoord*> *coords) const
-// {
-//   // Return zero if the field isn't defined.  Don't throw an exception.
-//   if(mesh->is_defined_field(field))
-//     return outputFields(mesh, field, coords);
-//   // Field isn't defined.
-//   std::vector<OutputValue> *results = new std::vector<OutputValue>;
-//   results->reserve(coords->size());
-//   for(std::vector<MasterCoord*>::size_type i=0; i<coords->size(); i++) {
-//     results->push_back(field.newOutputValue());
-//   }
-//   return results;
-// }
-
 // This version takes a vector of MasterCoords, not MasterCoord*s, and
 // is used by Edge::outputFields.
 std::vector<ArithmeticOutputValue> *
@@ -617,20 +589,6 @@ Element::outputFields(const FEMesh *mesh, const Field &field,
   }
   return results;
 }
-
-// std::vector<OutputValue> *
-// Element::outputFieldsAnyway(const CSubProblem *mesh, const Field &field,
-// 		      const std::vector<MasterCoord> &coords) const
-// {
-//   if(mesh->is_defined_field(field))
-//     return outputFields(mesh, field, coords);
-//   std::vector<OutputValue> *results = new std::vector<OutputValue>;
-//   results->reserve(coords.size());
-//   for(std::vector<MasterCoord>::size_type i=0; i<coords.size(); i++) {
-//     results->push_back(field.newOutputValue());
-//   }
-//   return results;
-// }
 
 std::vector<ArithmeticOutputValue> *
 Element::outputFieldDerivs(const FEMesh *mesh, const Field &field,
@@ -667,52 +625,6 @@ ArithmeticOutputValue Element::outputFieldDeriv(
     }
   return val;
 }
-
-// ArithmeticOutputValue Element::outputFieldTimeDeriv(
-// 				    const FEMesh *mesh,
-// 				    const Field &field,
-// 				    const MasterPosition &pos)
-//   const
-// {
-//   ArithmeticOutputValue val = field.newOutputValue();
-//   Field *tdfield = field.time_derivative();
-//   for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
-//       !node->end(); ++*node)
-//     {
-//       double sfvalue = node->shapefunction(pos);
-//       val += sfvalue*field.output(mesh, *node);
-//     }
-//   return val;
-// }
-
-// std::vector<ArithmeticOutputValue> *Element::outputFieldTimeDerivs(
-// 				   const FEMesh  *mesh,
-// 				   const Field &field,
-// 				   const std::vector<MasterCoord*> *coords)
-//   const
-// {
-//   std::vector<ArithmeticOutputValue> *results =
-//     new std::vector<ArithmeticOutputValue>;
-//   results->reserve(coords->size());
-//   for(MasterCoord *coord : coords) {
-//     ArithmeticOutputValue val = field.newOutputValue();
-//     for(CleverPtr<ElementFuncNodeIterator> node(funcnode_iterator());
-// 	!node.end(); ++*node)
-//       {
-// 	double sfvalue = node->shapefunction(*coord);
-// 	val += sfvalue*
-//       }
-//   }
-// }
-
-   
-  
-
-// OutputValue Element::outputFlux(const FEMesh *mesh, const Flux &flux,
-// 				const MasterPosition &pos) const
-// {
-//   return flux.output( mesh, this, pos );
-// }
 
 std::vector<ArithmeticOutputValue> *
 Element::outputFluxes(const FEMesh *mesh, const Flux &flux,

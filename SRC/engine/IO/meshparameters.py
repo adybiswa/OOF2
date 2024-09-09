@@ -59,11 +59,6 @@ class SubProblemFieldParameter(FieldParameter):
     noobjmsg = "SubProblem is not defined."
 ##    nofieldmsg = "Field '%s' is not defined on the SubProblem."
 
-##class FieldAnywayParameter(FieldParameter):
-##    # Never is incomputable.  See Element::outputFieldsAnyway.
-##    def incomputable(self, context):
-##        return 0
-
 class FluxParameter(parameter.ObjParameter, parameter.Parameter):
     def checker(self, x):
         if not isinstance(x, flux.Flux):

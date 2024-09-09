@@ -145,10 +145,6 @@ LinearizedSystem::LinearizedSystem(const LinearizedSystem &other)
   C_ = other.C_.clone();
   M_ = other.M_.clone();
   J_ = other.J_.clone();
-  K_indfree_ = other.K_indfree_.clone();
-  C_indfree_ = other.C_indfree_.clone();
-  M_indfree_ = other.M_indfree_.clone();
-  J_indfree_ = other.J_indfree_.clone();
   K_indfixed_ = other.K_indfixed_.clone();
   C_indfixed_ = other.C_indfixed_.clone();
   M_indfixed_ = other.M_indfixed_.clone();
@@ -578,19 +574,12 @@ void LinearizedSystem::build_MCK_maps() {
 
   // TODO OPT: These should be SparseSubMats.
 
-  // TODO: K_indfree_, etc, don't need to be stored in
-  // LinearizedSystem.  They're only used here and in dumpAll(), which
-  // is just for debugging.  Copying them when a LinearizedSystem is
-  // copied is a waste of time.  K_indfixed_, etc, do need to be
-  // stored, though.
-  
   // TODO OPT: We wouldn't need these matrices to be constructed
   // explicitly if we had a way of computing the empty[MCK]Maps
   // directly from the other maps and K_, C_, and M_.
-  K_indfree_ = SparseMat(K_, subp2indepEqnMap, subp2freeFieldMap);
-  C_indfree_ = SparseMat(C_, subp2indepEqnMap, subp2freeFieldMap);
-  M_indfree_ = SparseMat(M_, subp2indepEqnMap, subp2freeFieldMap);
-  J_indfree_ = SparseMat(J_, subp2indepEqnMap, subp2freeFieldMap);
+  SparseMat K_indfree_ = SparseMat(K_, subp2indepEqnMap, subp2freeFieldMap);
+  SparseMat C_indfree_ = SparseMat(C_, subp2indepEqnMap, subp2freeFieldMap);
+  SparseMat M_indfree_ = SparseMat(M_, subp2indepEqnMap, subp2freeFieldMap);
 
   K_indfixed_ = SparseMat(K_, subp2indepEqnMap, subp2fixedFieldMap);
   C_indfixed_ = SparseMat(C_, subp2indepEqnMap, subp2fixedFieldMap);
@@ -1767,10 +1756,6 @@ void LinearizedSystem::dumpAll(const std::string &filename, double time,
   os << "K_:" << std::endl << K_ << std::endl;
   os << "C_:" << std::endl << C_ << std::endl;
   os << "M_:" << std::endl << M_ << std::endl;
-  os << "K_indfree_:" << std::endl << K_indfree_ << std::endl;
-  os << "C_indfree_:" << std::endl << C_indfree_ << std::endl;
-  os << "M_indfree_:" << std::endl << M_indfree_ << std::endl;
-  os << "J_indfree_:" << std::endl << J_indfree_ << std::endl;
   os << "K_indfixed_:" << std::endl << K_indfixed_ << std::endl;
   os << "C_indfixed_:" << std::endl << C_indfixed_ << std::endl;
   os << "M_indfixed_:" << std::endl << M_indfixed_ << std::endl;

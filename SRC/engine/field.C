@@ -351,9 +351,6 @@ DegreeOfFreedom *ScalarFieldBase::operator()(const ElementFuncNodeIterator &ei)
 DegreeOfFreedom *ScalarFieldBase::operator()(const FuncNode *node,
 					     int component) const
 {
-  // std::cerr << "ScalarFieldBase::operator() "
-  // 	    << *node->doflist[node->fieldset.offset(this)]
-  // 	    << std::endl;
   assert(component == 0);
   // offset() will raise ErrNoSuchField if this field isn't defined at the node.
   return node->doflist[node->fieldset.offset(this)];

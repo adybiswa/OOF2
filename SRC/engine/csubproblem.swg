@@ -116,7 +116,6 @@ public:
   bool set_meshdofs(DoubleVec*);
   %newobject get_meshdofs;
   DoubleVec *get_meshdofs();
-  // void set_meshAuxDerivs(DoubleVec*, LinearizedSystem*, DoubleVec*);
 
   void set_slaveDoF(int);
   void clear_slaveDoFs();

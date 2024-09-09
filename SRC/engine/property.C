@@ -209,9 +209,9 @@ void FluxProperty::make_flux_contributions(const FEMesh *mesh,
 
   flux_offset(mesh, element, flux, pt, time, fluxdata);
   if(nlsolver->needsResidual()) {
-    // TODO: Check how nonlinear solvers use the residual.  Is it
-    // really just the static part of the flux?  What would happen
-    // with a nonlinear flux with a linear viscoelastic part?
+    // TODO TIMEDERIV: Check how nonlinear solvers use the residual.
+    // Is it really just the static part of the flux?  What would
+    // happen with a nonlinear flux with a linear viscoelastic part?
     static_flux_value(mesh, element, flux, pt, time, fluxdata);
   }
 

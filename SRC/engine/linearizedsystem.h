@@ -91,7 +91,6 @@ private:
   SparseMat K_, C_, M_, J_;
   // The free and independent parts of the matrices.
   // TODO MAP OPT: these should be SparseSubMats
-  SparseMat K_indfree_, C_indfree_, M_indfree_, J_indfree_;
   SparseMat K_indfixed_, M_indfixed_, C_indfixed_;
 
   // The sparse matrices are built from intermediate structures, which

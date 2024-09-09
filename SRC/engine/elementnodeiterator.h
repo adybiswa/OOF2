@@ -169,14 +169,15 @@ public:
 class ElementFuncNodeIterator : public ElementShapeFuncIterator {
 protected:
   int dofsum;			// no. of dofs seen so far
-  // The funcnode() member function are called twice within
-  // Element::ndof() for each function node of an element. it includes
-  // many pointer dereference operations which causes high cache
-  // misses rate. As a result, each time when funcnode() is called, we
-  // cache the result for reuse.
-  //* TODO: Is this still true? Element::ndof() doesn't call
-  //* funcnode() more than once for each node.  See if removing the
-  //* cache affects the run time.
+  // The funcnode() member function is called twice within
+  // Element::ndof() for each function node of an element (once
+  // explicitly in ndof(), and once when iterating to the next node).
+  // It includes many pointer dereference operations which causes high
+  // cache misses rate. As a result, each time when funcnode() is
+  // called, we cache the result for reuse.  (However, removing the
+  // cache had no significant effect on the run time for "oof2-test
+  // solver_test".  Maybe that's not the right test case.)
+  
   // Cache format: index and pointer pair of a function node 
   mutable std::pair<int, FuncNode*> fncache;
 public:

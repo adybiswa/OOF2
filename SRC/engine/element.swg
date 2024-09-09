@@ -121,9 +121,6 @@ public:
   %newobject outputFluxes;
   ArithmeticOutputValueVec *outputFluxes(FEMesh*, Flux&, MasterCoordVec*);
 
-//   void begin_material_computation(FEMesh*);
-//   void end_material_computation(FEMesh*);
-
   Coord from_master(MasterCoord *Point);
   MasterCoord to_master(Coord *Point);
 };

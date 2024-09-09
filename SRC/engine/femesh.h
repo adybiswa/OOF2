@@ -260,9 +260,8 @@ private:
 public:
   // Routines for copying DoF values 
   void get_dofvalues(DoubleVec &x, const DoFMap&) const; // mesh -> x
-  bool set_dofvalues(const DoubleVec &x, const DoFMap&,
-		     const std::set<int>&,
-		     bool verbose=false); // x -> mesh
+  bool set_dofvalues(const DoubleVec &x, const DoFMap&,  // x -> mesh
+		     const std::set<int>&);
 
   // Retrieve the value of a single DoF. Used by FloatBC, sparingly.
   double get_dofvalue(int) const;

@@ -218,11 +218,11 @@ DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
 		sum += value;
 	      }
 	    }
-	    // TODO: If SmallSystem::damping_matrix_element was called
-	    // with a time-derivative field, the global_col here needs
-	    // to be adjusted, or a different dofmap used.  Current
-	    // global_col assumes that damping_matrix_element was
-	    // called with the non-derivative field.  Maybe use an
+	    // TODO TIMEDERIV: If SmallSystem::damping_matrix_element
+	    // was called with a time-derivative field, the global_col
+	    // here needs to be adjusted, or a different dofmap used.
+	    // Current global_col assumes that damping_matrix_element
+	    // was called with the non-derivative field.  Maybe use an
 	    // additional map that converts time-deriv indices to
 	    // non-deriv indices?
 	    if(nonzero)
