@@ -30,8 +30,8 @@ class OOF_Mesh_Base(unittest.TestCase):
         # Some tests here use skeleton refinement, which uses random
         # numbers to shuffle element lists.  To make the tests
         # repeatable, the random number generator must be reseeded.
-        import random
-        random.seed(17)
+        from ooflib.SWIG.common import crandom
+        crandom.rndmseed(17)
         
 
 class OOF_Mesh(OOF_Mesh_Base):
