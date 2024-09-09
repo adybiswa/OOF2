@@ -1299,8 +1299,8 @@ class Skeleton(SkeletonBase):
             if len(badnodes) <= 10:
                 for (n1, n2) in badnodes:
                     p1 = n1.position()
-                    p2 = n1.position()
-                    print(f"{p1} - {p2} = {math.sqrt((p1-p2).norm2())}",
+                    p2 = n2.position()
+                    print(f"{p1} - {p2} = {math.sqrt((p1-p2).norm2()):.4e}",
                           file=sys.stderr)
             return (f"{len(badnodes)} node{(len(badnodes)!=1)*'s'} outside of tolerance ({tolerance})")
             

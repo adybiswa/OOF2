@@ -777,7 +777,7 @@ def build_mod_args():
                      # reference file is generated on an M1 MacBook,
                      # and vice versa, if the tolerance is less than
                      # 1.e-5.  I do not understand this.
-                     tolerance=1.e-5
+                     tolerance=1.2e-5
                      )
          ],
         "Snap Nodes" :
