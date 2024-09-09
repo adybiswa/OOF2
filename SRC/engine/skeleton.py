@@ -1291,12 +1291,19 @@ class Skeleton(SkeletonBase):
 
         # Basic topology is right, now quantitatively check node locations.
         tol2 = tolerance**2
+        badnodes = []
         for (n1,n2) in zip(self.nodes, other.nodes):
-            if (n1.position()-n2.position())**2 > tol2:
-                return "Node outside of tolerance, %s-%s=%s" % \
-                       (repr(n1.position()), repr(n2.position()),
-                       repr(n1.position()-n2.position()))
-
+            if (n1.position()-n2.position()).norm2() > tol2:
+                badnodes.append((n1, n2))
+        if badnodes:
+            if len(badnodes) <= 10:
+                for (n1, n2) in badnodes:
+                    p1 = n1.position()
+                    p2 = n1.position()
+                    print(f"{p1} - {p2} = {math.sqrt((p1-p2).norm2())}",
+                          file=sys.stderr)
+            return (f"{len(badnodes)} node{(len(badnodes)!=1)*'s'} outside of tolerance ({tolerance})")
+            
         if len(self.edgeboundaries)!=len(other.edgeboundaries):
             return "Edge boundary count mismatch"
         if len(self.pointboundaries)!=len(other.pointboundaries):
