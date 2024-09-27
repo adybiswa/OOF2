@@ -535,45 +535,45 @@ def _makePointBdyWidget(param, scope, **kwargs):
 meshparameters.MeshPointBdyParameter.makeWidget = _makePointBdyWidget
 
 #Interface branch
-def _getSortedBdyInterfaceNames(msh):
-    interfacemsplugin=msh.getMicrostructure().getPlugIn("Interfaces")
-    return msh.edgeBoundaryNames() + [_separator_proxy] + \
-           interfacemsplugin.getInterfaceNames()
+# def _getSortedBdyInterfaceNames(msh):
+#     interfacemsplugin=msh.getMicrostructure().getPlugIn("Interfaces")
+#     return msh.edgeBoundaryNames() + [_separator_proxy] + \
+#            interfacemsplugin.getInterfaceNames()
 
-#This one includes the string "<every>"
-def _getMeshEdgeBdyNamesExtra(msh):
-    return [placeholder.every.IDstring] + msh.edgeBoundaryNames()
+# #This one includes the string "<every>"
+# def _getMeshEdgeBdyNamesExtra(msh):
+#     return [placeholder.every.IDstring] + msh.edgeBoundaryNames()
 
-#This one lists mesh boundary names and interface names together.
-#It is no longer used, as new mesh boundaries are also
-#created from interfaces (originally, mesh boundaries are
-#created only based on a skeleton boundary template).
-class MeshEdgeBdyInterfaceParamWidget(MeshBoundaryParamWidget):
-    def __init__(self, param, scope, name=None, **kwargs):
-        MeshParamWidget.__init__(self, param, _getSortedBdyInterfaceNames,
-                                 scope, name=name, separator_func=_bdysepfunc,
-                                 **kwargs)
-        self.sbcallbacks.append(
-            switchboard.requestCallbackMain('mesh boundaries changed',
-                                            self.newBdys) )
+# #This one lists mesh boundary names and interface names together.
+# #It is no longer used, as new mesh boundaries are also
+# #created from interfaces (originally, mesh boundaries are
+# #created only based on a skeleton boundary template).
+# class MeshEdgeBdyInterfaceParamWidget(MeshBoundaryParamWidget):
+#     def __init__(self, param, scope, name=None, **kwargs):
+#         MeshParamWidget.__init__(self, param, _getSortedBdyInterfaceNames,
+#                                  scope, name=name, separator_func=_bdysepfunc,
+#                                  **kwargs)
+#         self.sbcallbacks.append(
+#             switchboard.requestCallbackMain('mesh boundaries changed',
+#                                             self.newBdys) )
 
-def _makeEdgeBdyInterfaceWidget(param, scope, **kwargs):
-    return MeshEdgeBdyInterfaceParamWidget(param, scope, name=param.name,
-                                           **kwargs)
+# def _makeEdgeBdyInterfaceWidget(param, scope, **kwargs):
+#     return MeshEdgeBdyInterfaceParamWidget(param, scope, name=param.name,
+#                                            **kwargs)
 
-meshparameters.MeshEdgeBdyInterfaceParameter.makeWidget \
-    = _makeEdgeBdyInterfaceWidget
+# meshparameters.MeshEdgeBdyInterfaceParameter.makeWidget \
+#     = _makeEdgeBdyInterfaceWidget
 
-class MeshEdgeBdyParamWidgetExtra(MeshBoundaryParamWidget):
-    def __init__(self, param, scope, name=None, **kwargs):
-        MeshParamWidget.__init__(self, param, _getMeshEdgeBdyNamesExtra,
-                                 scope, name=name, separator_func=_bdysepfunc,
-                                 **kwargs)
-        self.sbcallbacks.append(
-            switchboard.requestCallbackMain('mesh boundaries changed',
-                                            self.newBdys) )
+# class MeshEdgeBdyParamWidgetExtra(MeshBoundaryParamWidget):
+#     def __init__(self, param, scope, name=None, **kwargs):
+#         MeshParamWidget.__init__(self, param, _getMeshEdgeBdyNamesExtra,
+#                                  scope, name=name, separator_func=_bdysepfunc,
+#                                  **kwargs)
+#         self.sbcallbacks.append(
+#             switchboard.requestCallbackMain('mesh boundaries changed',
+#                                             self.newBdys) )
 
-def _makeEdgeBdyWidgetExtra(param, scope, **kwargs):
-    return MeshEdgeBdyParamWidgetExtra(param, scope, name=param.name, **kwargs)
+# def _makeEdgeBdyWidgetExtra(param, scope, **kwargs):
+#     return MeshEdgeBdyParamWidgetExtra(param, scope, name=param.name, **kwargs)
 
-meshparameters.MeshEdgeBdyParameterExtra.makeWidget = _makeEdgeBdyWidgetExtra
+# meshparameters.MeshEdgeBdyParameterExtra.makeWidget = _makeEdgeBdyWidgetExtra
