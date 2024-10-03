@@ -192,6 +192,11 @@ micromenu.addItem(oofmenu.OOFMenuItem(
     original.</para>"""
     ))
 
+## TODO: Add a way to copy a Microstructure along with all of its
+## Skeletons, Meshes, and Subproblems.  Maybe it's better to add a way
+## of copying a Skeleton or Mesh into another Microstructure, possibly
+## creating the new Microstructure in the process.
+
 #############################
 
 def deleteMicrostructure(menuitem, microstructure):

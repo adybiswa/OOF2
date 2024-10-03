@@ -168,6 +168,9 @@ reg = PropertyRegistration(
     params=[rank3tensor.C4iRank3TensorParameter(
             'dijk',
             rank3tensor.C4iRank3Tensor(d14=1, d15=1, d31=1, d36=1),
+        # TODO: putting "bar{4}" in the tool tip is unfortunate,
+        # because it ought to be rendered like \bar{4} in TeX, but
+        # it's not.  This applies to other tooltips too.
             tip="Point group C4i (aka bar{4}) piezoelectric tensor.")],
     outputs=["Strain", "Energy",
              "Material Constants:Couplings:Piezoelectric Coefficient D"],
