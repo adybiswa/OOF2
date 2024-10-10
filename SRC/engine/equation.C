@@ -224,7 +224,8 @@ DivergenceEquation::make_linear_system(const CSubProblem *subproblem,
 	    // Current global_col assumes that damping_matrix_element
 	    // was called with the non-derivative field.  Maybe use an
 	    // additional map that converts time-deriv indices to
-	    // non-deriv indices?
+	    // non-deriv indices?  (visco.C and damping.C do *not*
+	    // call damping_matrix_element with a time deriv field.)
 	    if(nonzero)
 	      linsys.insertC(global_row, global_col, sum*weight);
 	  }

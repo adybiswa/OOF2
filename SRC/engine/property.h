@@ -30,19 +30,21 @@ class Property;
 // things defined elsewhere
 class CNonlinearSolver;
 class CSubProblem;
+class DoubleVec;
 class EdgeSet;
 class Element;
 class ElementFuncNodeIterator;
+class Equation;
 class FEMesh;
 class Field;
 class Flux;
-class Equation;
+class IndexP;
 class LinearizedSystem;
 class MasterPosition;
 class Material;
+class NewEquation;
 class OutputVal;
 class PropertyOutput;
-class NewEquation;
 class SmallSystem;
 
 // Property objects are universally created from PropertyRegistration
@@ -252,6 +254,10 @@ private:
 #else
   mutable bool recurse;
 #endif
+  DoubleVec &fluxDeriv(const FEMesh*, const Element*,
+		       const ElementFuncNodeIterator&, const Flux*,
+		       const MasterPosition&, double time, const Field*,
+		       const IndexP&, SmallSystem&, SmallSystem&) const;
 
 public:
   FluxProperty(const std::string &nm, PyObject *registration)
@@ -289,7 +295,8 @@ public:
     const;
 
   // Redefining each of the following functions is optional in derived
-  // classes, but at least one of them must be redefined.
+  // classes, but at least one of them must be redefined.  TODO: Fix
+  // this comment.
 
   // Linearization/derivative of the flux with respect to field and
   // field derivatives.
@@ -300,6 +307,12 @@ public:
 			   const ElementFuncNodeIterator&,
 			   const Flux*, const MasterPosition&,
 			   double time, SmallSystem*)
+    const;
+
+  // Flux offset as described above.
+  virtual void flux_offset(const FEMesh*, const Element*,
+			   const Flux*, const MasterPosition&, double time,
+			   SmallSystem*)
     const;
 
   // The actual value of the flux at the given element and given point.
@@ -314,10 +327,6 @@ public:
 				 const Flux *flux, const MasterPosition &pt,
 				 double time, SmallSystem *fluxdata) const;
 
-  // Flux offset as described above.
-  virtual void flux_offset(const FEMesh*, const Element*, const Flux*,
-			   const MasterPosition&, double time, SmallSystem* )
-    const { return; }
 
   // These functions are called from material.C before and after the
   // flux contributions are requested.  If properties have

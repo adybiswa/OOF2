@@ -86,7 +86,7 @@ public:
 
   void addField(FEMesh*, const Field&);
   void removeField(FEMesh*, const Field&);
-    bool hasField(const Field&) const;
+  bool hasField(const Field&) const;
   // Returns the number of subproblems containing this point for which
   // the passed-in field is defined.
   int fieldDefCount(const Field&) const;
